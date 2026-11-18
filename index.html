@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Protahovací a posilovací sestava pro cyklistu – 15 min</title>
+<style>
+  :root{
+    --bg:#f6f7f9; --card:#fff; --ink:#1d2430; --muted:#5d6675; --line:#e3e6eb;
+    --b1:#2f7d6d; --b2:#3a6fb0; --b3:#c0662b; --b4:#7a4fb0; --b5:#b0434f; --b6:#5b7a2e;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#14171c; --card:#1d2129; --ink:#e7eaef; --muted:#9aa3b1; --line:#2c323c; }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  .wrap{max-width:760px;margin:0 auto;padding:20px 16px 60px}
+  h1{font-size:1.6rem;line-height:1.25;margin:8px 0 4px}
+  h2{font-size:1.2rem;margin:32px 0 12px}
+  .sub{color:var(--muted);margin:0 0 16px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin:12px 0}
+  .pills{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+  .pill{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:4px 12px;font-size:.9rem}
+  ul{padding-left:20px;margin:8px 0} li{margin:4px 0}
+  .start{display:block;width:100%;margin:20px 0 4px;padding:14px;border:0;border-radius:12px;background:var(--b1);color:#fff;font-size:1.05rem;font-weight:600;cursor:pointer}
+  table{width:100%;border-collapse:collapse;font-size:.95rem}
+  th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--muted);font-weight:600;font-size:.85rem}
+  td.n,td.t{white-space:nowrap} td.t{text-align:right} th.t{text-align:right}
+  tr.total td{font-weight:700;border-bottom:0}
+  .tag{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:middle}
+  .block{border-left:5px solid var(--c);}
+  .block h3{margin:0 0 8px;font-size:1.05rem;display:flex;justify-content:space-between;gap:8px}
+  .block h3 span{color:var(--muted);font-weight:500;font-size:.9rem;white-space:nowrap}
+  .ex{display:flex;gap:10px;margin:10px 0}
+  .num{flex:0 0 28px;height:28px;border-radius:50%;background:var(--c);color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center;font-size:.85rem}
+  .ex b{display:block}
+  .dose{color:var(--muted);font-size:.9rem}
+  .note{font-size:.9rem;color:var(--muted);margin-top:8px}
+  .warn{border-color:#e0b4b4;background:color-mix(in srgb,var(--card) 88%,#d9534f)}
+  /* časovač */
+  #timer{position:fixed;inset:0;background:var(--bg);display:none;flex-direction:column;padding:20px 16px;z-index:10}
+  #timer.on{display:flex}
+  .tbar{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:.9rem}
+  .tclose{background:none;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:6px 12px;font-size:.9rem;cursor:pointer}
+  .tmain{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;max-width:560px;margin:0 auto;width:100%}
+  .tblock{font-weight:600;color:var(--c)}
+  .tname{font-size:1.9rem;font-weight:700;margin:6px 0}
+  .tdose{font-size:1.15rem;color:var(--muted)}
+  .tclock{font-size:4.5rem;font-weight:700;font-variant-numeric:tabular-nums;margin:18px 0 6px}
+  .tdesc{font-size:1rem;line-height:1.5;margin-top:8px}
+  .tnext{color:var(--muted);font-size:.9rem;margin-top:16px}
+  .prog{height:6px;background:var(--line);border-radius:3px;overflow:hidden;margin:10px 0}
+  .prog i{display:block;height:100%;background:var(--c);width:0;transition:width .3s}
+  .tctrl{display:flex;gap:10px;max-width:560px;margin:0 auto;width:100%}
+  .tctrl button{flex:1;padding:16px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);font-size:1.05rem;font-weight:600;cursor:pointer}
+  .tctrl button.main{background:var(--c);color:#fff;border:0;flex:1.4}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Protahovací a posilovací sestava pro cyklistu</h1>
+  <p class="sub">15 minut · 14 cviků v 6 blocích · Ivan H, 17. 11. 2026</p>
+
+  <div class="pills">
+    <span class="pill">4–6× týdně</span>
+    <span class="pill">po jízdě nebo večer</span>
+    <span class="pill">cíl: nižší posed bez bolesti zad a krku</span>
+  </div>
+
+  <button class="start" id="startBtn">▶ Spustit sestavu s časovačem</button>
+
+  <h2>Proč toto pořadí</h2>
+  <div class="card">
+    <ul>
+      <li><b>Válec na začátek:</b> prokrví a uvolní svaly, další cviky pak jdou lépe.</li>
+      <li><b>Posilování před statickým strečinkem:</b> dlouhé protahování krátkodobě snižuje schopnost svalu se zapnout, proto střed těla jde dřív.</li>
+      <li><b>Statický strečink a krk na konec:</b> zklidní tělo, hodí se i před spaním.</li>
+      <li><b>Plynulé polohy:</b> břicho → na čtyřech → předloktí → záda → klek → sed. Bez zbytečného vstávání a lehání.</li>
+    </ul>
+    <p style="margin:10px 0 0"><b>Pomůcky:</b> pěnový válec, podložka, popruh nebo ručník, židle.</p>
+  </div>
+
+  <h2>Sestava v pořadí</h2>
+  <div class="card" style="padding:8px 12px">
+    <table id="tbl">
+      <thead><tr><th>#</th><th>Cvik</th><th>Dávka</th><th class="t">Čas</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <h2>Jak cviky dělat</h2>
+  <div id="blocks"></div>
+
+  <h2>Zásady</h2>
+  <div class="card">
+    <ul>
+      <li><b>Dýchání:</b> klidně a pravidelně, dech nezadržovat. Do strečinku jít s výdechem.</li>
+      <li><b>Míra:</b> strečink má táhnout, ne bolet. Při posilování raději méně opakování ve správné technice.</li>
+      <li><b>Kdy:</b> po jízdě nebo večer. Ne těsně před závodem.</li>
+      <li><b>Pravidelnost:</b> víc pomůže 4–6× týdně po 15 minutách než jednou týdně hodina.</li>
+    </ul>
+  </div>
+
+  <h2>Progrese po 2–3 týdnech</h2>
+  <div class="card" style="padding:8px 12px">
+    <table>
+      <thead><tr><th>Cvik</th><th>Začátek</th><th>Později</th></tr></thead>
+      <tbody>
+        <tr><td>Plank</td><td>2× 30 s</td><td>2× 45 s</td></tr>
+        <tr><td>Boční plank</td><td>25 s</td><td>40 s</td></tr>
+        <tr><td>Bird dog</td><td>6× na stranu</td><td>10× na stranu</td></tr>
+        <tr><td>Dead bug</td><td>8× na stranu</td><td>10–12× na stranu</td></tr>
+        <tr><td>Hýžďový most</td><td>12×</td><td>12× na jedné noze</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card warn">
+    Pokud se objeví ostrá bolest nebo brnění do rukou či nohou, cvik vynech a poraď se s fyzioterapeutem.
+  </div>
+</div>
+
+<div id="timer">
+  <div class="tbar"><span id="tcount"></span><button class="tclose" id="tClose">✕ Zavřít</button></div>
+  <div class="prog"><i id="tprog"></i></div>
+  <div class="tmain">
+    <div class="tblock" id="tblock"></div>
+    <div class="tname" id="tname"></div>
+    <div class="tdose" id="tdose"></div>
+    <div class="tclock" id="tclock"></div>
+    <div class="tdesc" id="tdesc"></div>
+    <div class="tnext" id="tnext"></div>
+  </div>
+  <div class="tctrl">
+    <button id="tPrev">◀</button>
+    <button class="main" id="tPlay">Start</button>
+    <button id="tNext">▶</button>
+  </div>
+</div>
+
+<script>
+const BLOCKS = [
+  {name:"Pěnový válec", pos:"Válec", time:"3 min", c:"--b1",
+   note:"Rolovat pomalu, asi 2–3 cm za sekundu. Na citlivém místě se 5 s zastavit. Nikdy ne přes bederní páteř a krk.",
+   ex:[
+    {n:"Hrudní páteř", d:"45 s rolování + 5× záklon (2 s)", s:60, t:"Válec napříč pod lopatkami, ruce za hlavou, boky na zemi. Pomalu rolovat nahoru a dolů. Pak 5× záklon přes válec s výdrží 2 s."},
+    {n:"Hýždě", d:"30 s na stranu", s:60, t:"Sed na válci, kotník přes protilehlé koleno, naklonit se na stranu přeložené nohy."},
+    {n:"Přední stehno a kyčel", d:"30 s na stranu", s:60, t:"Leh na břiše, válec pod stehnem. Rolovat od kolena ke kyčli."}
+  ]},
+  {name:"Na čtyřech", pos:"Na čtyřech", time:"3 min", c:"--b2", ex:[
+    {n:"Kočka a kráva", d:"8× pomalu", s:45, t:"S výdechem vyhrbit, s nádechem prohnout. Pohyb jde obratel po obratli."},
+    {n:"Navlékání jehly", d:"5× na stranu, výdrž 3 s", s:60, t:"Provléknout ruku pod tělem až na rameno, pak ji otevřít ke stropu. Otáčí se hrudník, ne boky."},
+    {n:"Bird dog", d:"6× na stranu, výdrž 3 s", s:75, t:"Natáhnout opačnou ruku a nohu do roviny se zády. Pánev se nesmí naklápět."}
+  ]},
+  {name:"Na předloktích", pos:"Předloktí", time:"2 min", c:"--b3", ex:[
+    {n:"Plank", d:"2× 30 s, pauza 15 s", s:75, t:"Lokty pod rameny, tělo v jedné přímce, zatnout břicho i hýždě. Bedra nepropadat."},
+    {n:"Boční plank", d:"25 s na stranu", s:60, t:"Loket pod ramenem, boky nahoru. Lehčí verze s koleny na zemi."}
+  ]},
+  {name:"Na zádech", pos:"Na zádech", time:"3 min", c:"--b4", ex:[
+    {n:"Dead bug", d:"8× na stranu", s:60, t:"Ruce nahoru, kolena v 90°. Pomalu spouštět opačnou ruku a nohu. Bedra celou dobu přitisknutá k zemi."},
+    {n:"Hýžďový most", d:"12×, výdrž 2 s", s:45, t:"Chodidla na zemi, zvednout pánev do roviny s koleny, nahoře zatnout hýždě."},
+    {n:"Zadní stehno s popruhem", d:"40 s na stranu", s:90, t:"Popruh kolem chodidla, zvednout nataženou nohu, koleno rovné. Druhá noha zůstává na zemi."}
+  ]},
+  {name:"Klek", pos:"Klek", time:"1,5 min", c:"--b5", ex:[
+    {n:"Kyčelní flexor", d:"40 s na stranu", s:90, t:"Jedna noha vpředu, zadní koleno na podložce. Zatnout hýždi zadní nohy a pánev posunout dopředu. Táhne vpředu kyčle, ne v bedrech."}
+  ]},
+  {name:"Sed na židli", pos:"Sed", time:"2 min", c:"--b6", ex:[
+    {n:"Zasunutí brady", d:"10×, výdrž 3 s", s:45, t:"Hlava rovně, bradu zatáhnout dozadu jako „dvojitá brada“. Nepřikyvovat."},
+    {n:"Protahování trapézu", d:"30 s na stranu", s:75, t:"Jednou rukou držet židli, druhou jemně přitáhnout hlavu k opačnému rameni."}
+  ]}
+];
+
+const fmt = s => Math.floor(s/60)+":"+String(s%60).padStart(2,"0");
+const ALL = [];
+BLOCKS.forEach((b,bi)=>b.ex.forEach(e=>ALL.push({...e,b,bi,i:ALL.length+1})));
+
+// tabulka
+const tb = document.querySelector("#tbl tbody");
+ALL.forEach(e=>{
+  tb.insertAdjacentHTML("beforeend",
+    `<tr><td class="n">${e.i}</td><td><span class="tag" style="background:var(${e.b.c})"></span>${e.n}<div class="dose">${e.b.pos}</div></td><td>${e.d}</td><td class="t">${fmt(e.s)}</td></tr>`);
+});
+tb.insertAdjacentHTML("beforeend",`<tr class="total"><td></td><td>Celkem</td><td></td><td class="t">${fmt(ALL.reduce((a,e)=>a+e.s,0))}</td></tr>`);
+
+// bloky
+const bl = document.getElementById("blocks");
+BLOCKS.forEach((b,bi)=>{
+  const exs = ALL.filter(e=>e.bi===bi).map(e=>
+    `<div class="ex"><div class="num">${e.i}</div><div><b>${e.n}</b><span class="dose">${e.d}</span><div>${e.t}</div></div></div>`).join("");
+  bl.insertAdjacentHTML("beforeend",
+    `<div class="card block" style="--c:var(${b.c})"><h3>Blok ${bi+1} – ${b.name}<span>${b.time}</span></h3>${exs}${b.note?`<div class="note">${b.note}</div>`:""}</div>`);
+});
+
+// časovač
+const T = document.getElementById("timer");
+const $ = id => document.getElementById(id);
+let idx=0, left=0, running=false, tick=null, ac=null;
+
+function beep(f=880,d=.15){
+  try{
+    ac = ac || new (window.AudioContext||window.webkitAudioContext)();
+    const o=ac.createOscillator(), g=ac.createGain();
+    o.frequency.value=f; o.connect(g); g.connect(ac.destination);
+    g.gain.setValueAtTime(.2,ac.currentTime); g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+d);
+    o.start(); o.stop(ac.currentTime+d);
+  }catch(e){}
+}
+function show(){
+  const e=ALL[idx];
+  T.style.setProperty("--c",`var(${e.b.c})`);
+  $("tcount").textContent=`Cvik ${idx+1} / ${ALL.length}`;
+  $("tblock").textContent=`Blok ${e.bi+1} – ${e.b.name}`;
+  $("tname").textContent=e.n;
+  $("tdose").textContent=e.d;
+  $("tdesc").textContent=e.t;
+  $("tclock").textContent=fmt(left);
+  $("tprog").style.width=((idx)/ALL.length*100)+"%";
+  const nx=ALL[idx+1];
+  $("tnext").textContent= nx ? `Další: ${nx.n}` : "Poslední cvik";
+  $("tPlay").textContent= running ? "Pauza" : (left===e.s ? "Start" : "Pokračovat");
+}
+function go(i){
+  idx=Math.max(0,Math.min(ALL.length-1,i)); left=ALL[idx].s; show();
+}
+function stop(){ running=false; clearInterval(tick); }
+function play(){
+  if(running){ stop(); show(); return; }
+  running=true; beep(660); show();
+  tick=setInterval(()=>{
+    left--;
+    if(left<=3 && left>0) beep(520,.1);
+    if(left<=0){
+      beep(990,.35);
+      if(idx<ALL.length-1){ go(idx+1); }
+      else{ stop(); $("tclock").textContent="Hotovo 💪"; $("tprog").style.width="100%"; $("tPlay").textContent="Znovu"; idx=-1; return; }
+    }
+    show();
+  },1000);
+}
+$("startBtn").onclick=()=>{ stop(); go(0); T.classList.add("on"); };
+$("tClose").onclick=()=>{ stop(); T.classList.remove("on"); };
+$("tPlay").onclick=()=>{ if(idx<0){ go(0); } play(); };
+$("tNext").onclick=()=>{ const r=running; stop(); go(idx+1); if(r) play(); };
+$("tPrev").onclick=()=>{ const r=running; stop(); go(idx-1); if(r) play(); };
+</script>
+</body>
+</html>
