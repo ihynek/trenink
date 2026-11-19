@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Protahovací a posilovací sestava pro cyklistu – 15 min</title>
+<title>Sestava 1 – válec a posílení zad (cyklista)</title>
 <style>
   :root{
     --bg:#f6f7f9; --card:#fff; --ink:#1d2430; --muted:#5d6675; --line:#e3e6eb;
@@ -76,6 +76,7 @@
   .fig .floor{stroke:var(--line);stroke-width:4;stroke-linecap:round}
   .fig .far{opacity:.38}
   .fig .eye{fill:var(--card,#fff)}
+  .fig .vlabel{font:600 11px system-ui,sans-serif;fill:var(--muted,#888)}
   .fig .prop{fill:color-mix(in srgb,#c0662b 55%,var(--card))}
   .fig .prop2{fill:color-mix(in srgb,#c0662b 80%,var(--ink))}
   .fig .propl{stroke:color-mix(in srgb,var(--muted) 70%,transparent);stroke-width:7;fill:none;stroke-linecap:round}
@@ -96,7 +97,7 @@
 </head>
 <body>
 <div class="wrap">
-  <h1>Protahovací a posilovací sestava pro cyklistu</h1>
+  <h1>Sestava 1 – válec a posílení zad</h1>
   <p class="sub"><span id="subTime"></span> · 15 cviků v 6 blocích · Ivan H, 17. 11. 2026</p>
 
   <div class="pills">
@@ -112,12 +113,13 @@
   <div class="card">
     <ul>
       <li><b>Válec na začátek:</b> prokrví a uvolní svaly, další cviky pak jdou lépe.</li>
-      <li><b>Kobra po válci:</b> ležíš už na břiše a záklon vyrovná celodenní předklon na kole i u stolu.</li>
-      <li><b>Posilování před statickým strečinkem:</b> dlouhé protahování krátkodobě snižuje schopnost svalu se zapnout, proto střed těla jde dřív.</li>
-      <li><b>Statický strečink a krk na konec:</b> zklidní tělo, hodí se i před spaním.</li>
-      <li><b>Plynulé polohy:</b> válec → břicho (kobra) → na čtyřech → předloktí → záda → klek → sed. Bez zbytečného vstávání a lehání.</li>
+      <li><b>Na břiše hned po válci:</b> kobra a superman podpoří bederní lordózu, T a Y zdvihy posílí mezilopatkové svaly a střední a dolní trapéz, aby ramena netáhla dopředu.</li>
+      <li><b>Bedra v neutrálu:</b> u planku, dead bugu i mostu nepodsazovat pánev a nezatlačovat bedra do země, to by je ještě víc zplošťovalo.</li>
+      <li><b>Sed na konec:</b> zvedání kolen s pánví klopenou dopředu posílí flexory kyčle, roztahování gumy dorovná mezilopatkové svaly a zasunutí brady srovná krk.</li>
+      <li><b>Plynulé polohy:</b> válec → břicho → na čtyřech → předloktí → záda → sed. Bez zbytečného vstávání a lehání.</li>
+      <li><b>Protahování</b> (zadní stehna, flexor kyčle, trapéz, prsa) je v samostatné Sestavě 2.</li>
     </ul>
-    <p style="margin:10px 0 0"><b>Pomůcky:</b> pěnový válec, podložka, popruh nebo ručník, židle.</p>
+    <p style="margin:10px 0 0"><b>Pomůcky:</b> pěnový válec, podložka, židle, odporová guma.</p>
   </div>
 
   <h2>Sestava v pořadí</h2>
@@ -146,11 +148,15 @@
     <table>
       <thead><tr><th>Cvik</th><th>Začátek</th><th>Později</th></tr></thead>
       <tbody>
+        <tr><td>T a Y zdvihy</td><td>10× / 8×</td><td>12× / 10×, výdrž 5 s</td></tr>
+        <tr><td>Superman</td><td>8×</td><td>10×, výdrž 5 s</td></tr>
         <tr><td>Plank</td><td>2× 30 s</td><td>2× 45 s</td></tr>
         <tr><td>Boční plank</td><td>25 s</td><td>40 s</td></tr>
         <tr><td>Bird dog</td><td>6× na stranu</td><td>10× na stranu</td></tr>
         <tr><td>Dead bug</td><td>8× na stranu</td><td>10–12× na stranu</td></tr>
         <tr><td>Hýžďový most</td><td>12×</td><td>12× na jedné noze</td></tr>
+        <tr><td>Roztahování gumy</td><td>12×</td><td>15× nebo silnější guma</td></tr>
+        <tr><td>Zvedání kolen</td><td>8× na stranu</td><td>10× na stranu, výdrž 5 s</td></tr>
       </tbody>
     </table>
   </div>
@@ -190,27 +196,29 @@ const BLOCKS = [
     {n:"Hýždě", d:"30 s na stranu", s:60, t:"Sed na válci, kotník přes protilehlé koleno, naklonit se na stranu přeložené nohy."},
     {n:"Přední stehno a kyčel", d:"30 s na stranu", s:60, t:"Přední strana stehna (ne boční). Leh na břiše o předloktí, válec pod stehny. Rolovat od kousku nad kolenem až pod kost pánve. Nejezdit přes koleno ani přes kost."}
   ]},
-  {name:"Na břiše a na čtyřech", pos:"Na čtyřech", c:"--b2", ex:[
-    {n:"Kobra", pos:"Na břiše", anim:"kobra", d:"8×, výdrž 3 s", s:45, t:"Leh na břiše, dlaně vedle hrudníku. S nádechem zvednout hrudník, pánev zůstává na zemi, lokty u těla, ramena dolů. S výdechem zpět. Lehčí verze: o předloktí."},
+  {name:"Na břiše", pos:"Na břiše", c:"--b2", ex:[
+    {n:"Kobra", d:"8×, výdrž 3 s", s:45, t:"Leh na břiše, dlaně vedle hrudníku. S nádechem zvednout hrudník, pánev zůstává na zemi, lokty u těla, ramena dolů. S výdechem zpět. Lehčí verze: o předloktí."},
+    {n:"T zdvihy", d:"10×, výdrž 3 s", s:60, t:"Ruce do stran (T), palce nahoru. Stáhnout lopatky k sobě a dolů, zvednout paže kousek nad zem. Čelo nad podložkou, krk dlouhý, ramena pryč od uší."},
+    {n:"Y zdvihy", d:"8×, výdrž 3 s", s:50, t:"Ruce šikmo nad hlavu (Y), palce nahoru. Lopatky dolů k zadní kapse, zvednout paže kousek nad zem. Pohled do podložky."},
+    {n:"Superman", d:"8×, výdrž 3 s", s:50, t:"Ruce před sebou. Zvednout hrudník, paže i nohy kousek nad zem, bedra jemně v záklonu. Hlava v prodloužení páteře, nezaklánět krk."}
+  ]},
+  {name:"Na čtyřech", pos:"Na čtyřech", c:"--b3", ex:[
     {n:"Kočka a kráva", d:"8× pomalu", s:45, t:"S výdechem vyhrbit, s nádechem prohnout. Pohyb jde obratel po obratli."},
     {n:"Navlékání jehly", d:"5× na stranu, výdrž 3 s", s:60, t:"Provléknout ruku pod tělem až na rameno, pak ji otevřít ke stropu. Otáčí se hrudník, ne boky."},
-    {n:"Bird dog", d:"6× na stranu, výdrž 3 s", s:75, t:"Natáhnout opačnou ruku a nohu do roviny se zády. Pánev se nesmí naklápět."}
+    {n:"Bird dog", d:"6× na stranu, výdrž 3 s", s:75, t:"Natáhnout opačnou ruku a nohu do roviny se zády. Bedra jemně prohnutá (ne kulatá), pánev se nesmí naklápět do strany."}
   ]},
-  {name:"Na předloktích", pos:"Předloktí", c:"--b3", ex:[
-    {n:"Plank", d:"2× 30 s, pauza 15 s", s:75, t:"Lokty pod rameny, tělo v jedné přímce, zatnout břicho i hýždě. Bedra nepropadat."},
-    {n:"Boční plank", d:"25 s na stranu", s:60, t:"Loket pod ramenem, boky nahoru. Lehčí verze s koleny na zemi."}
+  {name:"Na předloktích", pos:"Předloktí", c:"--b4", ex:[
+    {n:"Plank", d:"2× 30 s, pauza 15 s", s:75, t:"Lokty pod rameny, tělo v jedné přímce, zpevnit břicho. Bedra v neutrálu: nepropadat, ale ani nepodsazovat pánev."},
+    {n:"Boční plank", d:"25 s na stranu", s:60, t:"Loket pod ramenem, boky nahoru, tělo v jedné přímce. Lehčí verze s koleny na zemi."}
   ]},
-  {name:"Na zádech", pos:"Na zádech", c:"--b4", ex:[
-    {n:"Dead bug", d:"8× na stranu", s:60, t:"Ruce nahoru, kolena v 90°. Pomalu spouštět opačnou ruku a nohu. Bedra celou dobu přitisknutá k zemi."},
-    {n:"Hýžďový most", d:"12×, výdrž 2 s", s:45, t:"Chodidla na zemi, zvednout pánev do roviny s koleny, nahoře zatnout hýždě."},
-    {n:"Zadní stehno s popruhem", d:"40 s na stranu", s:90, t:"Popruh kolem chodidla, zvednout nataženou nohu, koleno rovné. Druhá noha zůstává na zemi."}
-  ]},
-  {name:"Klek", pos:"Klek", c:"--b5", ex:[
-    {n:"Kyčelní flexor", d:"40 s na stranu", s:90, t:"Jedna noha vpředu, zadní koleno na podložce. Zatnout hýždi zadní nohy a pánev posunout dopředu. Táhne vpředu kyčle, ne v bedrech."}
+  {name:"Na zádech", pos:"Na zádech", c:"--b5", ex:[
+    {n:"Dead bug", d:"8× na stranu", s:60, t:"Ruce nahoru, kolena v 90°. Pomalu spouštět opačnou ruku a nohu. Bedra v neutrálu: malá mezera pod nimi, nezatlačovat je do země."},
+    {n:"Hýžďový most", d:"12×, výdrž 2 s", s:45, t:"Chodidla na zemi, zvednout pánev do roviny s koleny silou hýždí. Pánev nepodsazovat, bedra nechat v přirozené poloze."}
   ]},
   {name:"Sed na židli", pos:"Sed", c:"--b6", ex:[
-    {n:"Zasunutí brady", d:"10×, výdrž 3 s", s:45, t:"Hlava rovně, bradu zatáhnout dozadu jako „dvojitá brada“. Nepřikyvovat."},
-    {n:"Protahování trapézu", d:"30 s na stranu", s:75, t:"Jednou rukou držet židli, druhou jemně přitáhnout hlavu k opačnému rameni."}
+    {n:"Zvedání kolen", d:"8× na stranu, výdrž 3 s", s:75, t:"Sed na přední části židle, rovná záda, pánev klopit dopředu (bedra jemně prohnutá). Zvednout koleno pár centimetrů nad sedák, záda se nesmí zakulatit."},
+    {n:"Roztahování gumy", d:"12×, výdrž 2 s", s:50, t:"Sed vzpřímeně, guma v natažených rukou před hrudníkem, ruce na šířku ramen. Roztáhnout ruce do stran, lopatky k sobě a dolů, výdrž 2 s, pomalu zpět. Ramena dolů od uší."},
+    {n:"Zasunutí brady", d:"10×, výdrž 3 s", s:45, t:"Hlava rovně, bradu zatáhnout dozadu jako „dvojitá brada“. Nepřikyvovat."}
   ]}
 ];
 
@@ -335,9 +343,9 @@ function drawFront2(g,p,A){
     torso:path(pl([hc,nk]),30,INK)+path(pl([hpA,hpB]),22,INK)+path(pl([shA,shB]),18,INK),
     armA:arm(shA,p.armA,A.farArm==="A"), armB:arm(shB,p.armB,A.farArm==="B"),
     head:path(pl([nk,hd]),10,INK)+`<circle cx="${hd.x.toFixed(1)}" cy="${hd.y.toFixed(1)}" r="${L.head}" fill="currentColor"/>`+
-      [eye(-1),eye(1)].map(q=>`<circle cx="${q.x.toFixed(1)}" cy="${q.y.toFixed(1)}" r="2.4" class="eye"/>`).join("")
+      (A.noEyes?[]:[eye(-1),eye(1)]).map(q=>`<circle cx="${q.x.toFixed(1)}" cy="${q.y.toFixed(1)}" r="2.4" class="eye"/>`).join("")
   };
-  g.innerHTML=order.map(k=>parts[k]).join("");
+  g.innerHTML=order.map(k=>parts[k]).join("")+(A.extraF?A.extraF(p):"");
 }
 function draw(svg,p){ const A=svg._anim, g=svg.querySelector(".body"); if(A.front===2) drawFront2(g,p,A); else if(A.front) drawFront(g,p); else drawSide(g,p,A); }
 
@@ -396,6 +404,21 @@ const bpl1={hc:[180,166],hw:8,nk:[272,138],sw:12,head:[293,132],ea:73,
 const bpl0={hc:[176,190],hw:8,nk:[272,148],sw:12,head:[293,139],ea:66,
   armA:[[277,198],[268,204]],armB:[[238,112],[188,176]],
   legA:[[108,197],[40,199],[40,206]],legB:[[108,190],[40,192],[38,199]]};
+// T zdvihy – zepředu (od hlavy), leh na břiše
+const tz0={hc:[200,170],hw:0,nk:[200,190],sw:32,head:[200,197],ea:0,armB:[[250,197],[296,199]],armA:[[150,197],[104,199]],legA:[],legB:[]};
+const tz1={hc:[200,170],hw:0,nk:[200,188],sw:27,head:[200,194],ea:0,armB:[[245,176],[288,158]],armA:[[155,176],[112,158]],legA:[],legB:[]};
+// Y zdvihy a superman – z boku, leh na břiše, ruce nad hlavou
+const yz0={hip:[186,190],torso:-1,head:-8,armF:{a:[0,0]},armN:{a:[1,1]},legF:{a:[181,180],ft:180},legN:{a:[180,180],ft:180}};
+const yz1={...yz0,torso:-3,head:-10,armF:{a:[-9,-9]},armN:{a:[-10,-10]}};
+const sm1={...yz0,torso:-11,head:-6,armF:{a:[-15,-15]},armN:{a:[-16,-16]},legF:{a:[184,184],ft:182},legN:{a:[185,185],ft:182}};
+// zvedání kolen – sed na židli
+const zk0={hip:[175,130],torso:-88,head:4,armF:{ik:[198,140],bend:-1},armN:{ik:[202,140],bend:-1},legF:{a:[0,90],ft:0},legN:{a:[2,90],ft:0}};
+const zk1={...zk0,legN:{a:[-16,86],ft:0}}, zk1b={...zk0,legF:{a:[-16,86],ft:0}};
+// roztahování gumy – zepředu, sed na židli
+const gm0={hc:[200,128],hw:15,nk:[200,46],sw:28,head:[200,23],ea:0,
+  armA:[[220,74],[212,86]],armB:[[180,74],[188,86]],
+  legA:[[216,150],[222,198],[224,205]],legB:[[184,150],[178,198],[176,205]]};
+const gm1={...gm0,sw:25,armA:[[268,52],[314,54]],armB:[[132,52],[86,54]]};
 const K=(p,hold,move)=>({p,hold,move});
 const ANIMS={
   "Hrudní páteř":{face:-1,props:ROLLER(240),
@@ -403,19 +426,25 @@ const ANIMS={
          K(hrudniBase(170,192,-21),300,900),K({...hrudniBase(170,192,-21),chest:6,head:14},1500,900)],
     idle:[K(hrudniBase(158,184,-15),200,1300),K(hrudniBase(182,184,-20),200,1300)],
     pairs:[[hrudniBase(170,192,-21),{...hrudniBase(170,192,-21),chest:6,head:14}]]},
-  "Hýždě":{front:2,vb:"40 30 320 185",order:["legB","torso","armB","armA","head","legA"],
+  "Hýždě":{front:2,label:"pohled zepředu",vb:"40 30 320 185",order:["legB","torso","armB","armA","head","legA"],
     props:`<rect x="146" y="177" width="108" height="27" rx="13" class="prop"/><ellipse cx="250" cy="190.5" rx="5" ry="13" class="prop2"/>`,
     seq:[K(hyz0,300,1600),K(hyz1,1800,1600)]},
   "Přední stehno a kyčel":{props:ROLLER(180),
     seq:[K({hip:[200,166],torso:-12,head:-4,armF:{a:[90,0]},armN:{a:[90,0]},legF:{rel:"hip",dx:-136,dy:32,bend:1,ft:180},legN:{rel:"hip",dx:-134,dy:30,bend:1,ft:180}},150,1700),
          K({hip:[248,166],torso:-12,head:-4,armF:{a:[90,0]},armN:{a:[90,0]},legF:{rel:"hip",dx:-136,dy:32,bend:1,ft:180},legN:{rel:"hip",dx:-134,dy:30,bend:1,ft:180}},150,1700)]},
+  "T zdvihy":{front:2,label:"pohled od hlavy",vb:"40 100 320 120",noEyes:true,order:["torso","head","armA","armB"],seq:[K(tz0,700,900),K(tz1,2200,900)]},
+  "Y zdvihy":{seq:[K(yz0,700,900),K(yz1,2200,900)]},
+  "Superman":{seq:[K(yz0,700,1000),K(sm1,2200,1000)]},
+  "Zvedání kolen":{vb:"60 -10 300 222",props:CHAIR,seq:[K(zk0,500,700),K(zk1,2000,700),K(zk0,500,700),K(zk1b,2000,700)],pairs:[[zk0,zk1],[zk0,zk1b]],repMode:"side"},
+  "Roztahování gumy":{front:2,label:"pohled zepředu",vb:"40 -10 320 222",props:CHAIR_F,order:["legA","legB","torso","head","armA","armB"],seq:[K(gm0,600,900),K(gm1,1800,900)],
+    extraF:(p)=>{ const a=p.armA[p.armA.length-1], b=p.armB[p.armB.length-1]; return `<path d="M${a[0].toFixed(1)} ${a[1].toFixed(1)} L${b[0].toFixed(1)} ${b[1].toFixed(1)}" stroke="#c0662b" stroke-width="5" stroke-linecap="round"/>`; }},
   "Kobra":{seq:[K(kobra0,700,1600),K(kobra1,2200,1600)]},
   "Kočka a kráva":{seq:[K(fours({torso:6,chest:-50,head:-15,armF:{a:[82,82]},armN:{a:[83,83]}}),900,1500),K(fours({torso:-27,chest:16,head:55}),900,1500)]},
-  "Navlékání jehly":{front:2,vb:"40 -2 320 218",farArm:"B",order:["torso","armB","head","armA"],seq:[K(jeh0,900,1500),K(jeh1,1600,1500)]},
+  "Navlékání jehly":{front:2,label:"pohled zepředu",vb:"40 -2 320 218",farArm:"B",order:["torso","armB","head","armA"],seq:[K(jeh0,900,1500),K(jeh1,1600,1500)]},
   "Bird dog":{seq:[K(fours(),600,1200),K(fours({head:6,armN:{a:[-6,-6]},legF:{a:[183,183],ft:95}}),1800,1200),K(fours(),600,1200),K(fours({head:6,armF:{a:[-6,-6]},legN:{a:[183,183],ft:95}}),1800,1200)],
     pairs:[[fours(),fours({head:6,armN:{a:[-6,-6]},legF:{a:[183,183],ft:95}})],[fours(),fours({head:6,armF:{a:[-6,-6]},legN:{a:[183,183],ft:95}})]],repMode:"side"},
   "Plank":{seq:[K(plank0,700,1200),K(plank1,3000,1200)],tl:[[0,30,1],[30,45,0],[45,75,1]]},
-  "Boční plank":{front:2,order:["legA","legB","torso","armA","head","armB"],seq:[K(bpl0,700,1200),K(bpl1,3000,1200)],tl:[[0,29.5,1],[29.5,31.5,0],[31.5,60,1]]},
+  "Boční plank":{front:2,label:"pohled zepředu",order:["legA","legB","torso","armA","head","armB"],seq:[K(bpl0,700,1200),K(bpl1,3000,1200)],tl:[[0,29.5,1],[29.5,31.5,0],[31.5,60,1]]},
   "Dead bug":{face:-1,seq:[K(dbug0,500,1100),K({...dbug0,armN:{a:[-14,-14]},legF:{a:[175,175],ft:180}},900,1100),K(dbug0,500,1100),K({...dbug0,armF:{a:[-16,-16]},legN:{a:[174,174],ft:180}},900,1100)],
     pairs:[[dbug0,{...dbug0,armN:{a:[-14,-14]},legF:{a:[175,175],ft:180}}],[dbug0,{...dbug0,armF:{a:[-16,-16]},legN:{a:[174,174],ft:180}}]],repMode:"alt"},
   "Hýžďový most":{face:-1,seq:[K(most0,700,1100),K(most1,1800,1100)]},
@@ -423,7 +452,7 @@ const ANIMS={
     extra:(s)=>{ const toe=s.legs[1][3], h=s.arms[1][2]; return `<path d="M${toe.x.toFixed(1)} ${toe.y.toFixed(1)} L${h.x.toFixed(1)} ${h.y.toFixed(1)}" stroke="#c0662b" stroke-width="4" stroke-linecap="round"/>`; }},
   "Kyčelní flexor":{vb:"20 -8 380 222",seq:[K(flex0,800,1800),K(flex1,3000,1800)],tl:[[0,1,0],[1,44.5,1],[44.5,46.5,0],[46.5,90,1]]},
   "Zasunutí brady":{vb:"60 -10 300 222",props:CHAIR,seq:[K(brada0,900,700),K(brada1,2500,700)]},
-  "Protahování trapézu":{front:true,vb:"60 -10 280 222",props:CHAIR_F,seq:[K(trap0,500,1500),K(trap1,2500,1500),K(trap0,500,1500),K(trap1b,2500,1500)],
+  "Protahování trapézu":{front:true,label:"pohled zepředu",vb:"60 -10 280 222",props:CHAIR_F,seq:[K(trap0,500,1500),K(trap1,2500,1500),K(trap0,500,1500),K(trap1b,2500,1500)],
     pairs:[[trap0,trap1],[trap0,trap1b]],tl:[[0,37,1,0],[37,39,0,0],[39,75,1,1]]}
 };
 for(const A of Object.values(ANIMS)) if(!A.pairs) A.pairs=[[A.seq[0].p,A.seq[1].p]];
@@ -433,6 +462,7 @@ function makeFig(name){
   const svg=document.createElementNS("http://www.w3.org/2000/svg","svg");
   svg.setAttribute("viewBox",A.vb||"20 70 380 150"); svg.setAttribute("class","fig");
   svg.innerHTML=`<rect x="30" y="204" width="360" height="7" rx="3.5" class="mat"/><line class="floor" x1="25" y1="212" x2="395" y2="212"/>${A.props||""}<g class="body"></g>`;
+  if(A.label){ const [vx,vy]=(A.vb||"20 70 380 150").split(" ").map(Number); svg.insertAdjacentHTML("beforeend",`<text x="${vx+6}" y="${vy+15}" class="vlabel">${A.label}</text>`); }
   svg._anim=A; draw(svg,A.seq[0].p); return svg;
 }
 function animSeq(svg,seq,ms){
@@ -472,10 +502,15 @@ setInterval(frame,1000/30); frame();
 const T = document.getElementById("timer");
 const $ = id => document.getElementById(id);
 const PAUSE_IN = 15, PAUSE_BLOCK = 30;
-const SWITCH = new Set(["Hýždě","Přední stehno a kyčel","Navlékání jehly","Bird dog","Boční plank","Zadní stehno s popruhem","Kyčelní flexor","Protahování trapézu"]);
+const SWITCH = new Set(["Hýždě","Přední stehno a kyčel","Navlékání jehly","Bird dog","Boční plank","Zvedání kolen"]);
 const REPS={
   "Hrudní páteř":{w:["záklon","zpět"],segs:[[45,15]],n:5,back:.85},
   "Kobra":{w:["nahoru","dolů"],segs:[[0,45]],n:8,back:.8},
+  "T zdvihy":{w:["zvednout","položit"],segs:[[0,60]],n:10,back:.75},
+  "Y zdvihy":{w:["zvednout","položit"],segs:[[0,50]],n:8,back:.75},
+  "Superman":{w:["nahoru","dolů"],segs:[[0,50]],n:8,back:.75},
+  "Roztahování gumy":{w:["roztáhnout","povolit"],segs:[[0,50]],n:12,back:.65},
+  "Zvedání kolen":{w:["zvednout","položit"],segs:[[0,37.5],[37.5,37.5]],n:8,back:.8},
   "Kočka a kráva":{w:["vyhrbit","prohnout"],segs:[[0,45]],n:8,back:.5},
   "Navlékání jehly":{w:["provléknout","otevřít"],segs:[[0,30],[30,30]],n:5,back:.75},
   "Bird dog":{w:["natáhnout","zpět"],segs:[[0,37.5],[37.5,37.5]],n:6,back:.75},
