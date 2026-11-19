@@ -188,7 +188,7 @@ const BLOCKS = [
    ex:[
     {n:"Hrudní páteř", d:"45 s rolování + 5× záklon (2 s)", s:60, t:"Válec napříč pod lopatkami, ruce za hlavou, boky na zemi. Pomalu rolovat nahoru a dolů. Pak 5× záklon přes válec s výdrží 2 s."},
     {n:"Hýždě", d:"30 s na stranu", s:60, t:"Sed na válci, kotník přes protilehlé koleno, naklonit se na stranu přeložené nohy."},
-    {n:"Přední stehno a kyčel", d:"30 s na stranu", s:60, t:"Leh na břiše, válec pod stehnem. Rolovat od kolena ke kyčli."}
+    {n:"Přední stehno a kyčel", d:"30 s na stranu", s:60, t:"Přední strana stehna (ne boční). Leh na břiše o předloktí, válec pod stehny. Rolovat od kousku nad kolenem až pod kost pánve. Nejezdit přes koleno ani přes kost."}
   ]},
   {name:"Na břiše a na čtyřech", pos:"Na čtyřech", c:"--b2", ex:[
     {n:"Kobra", pos:"Na břiše", anim:"kobra", d:"8×, výdrž 3 s", s:45, t:"Leh na břiše, dlaně vedle hrudníku. S nádechem zvednout hrudník, pánev zůstává na zemi, lokty u těla, ramena dolů. S výdechem zpět. Lehčí verze: o předloktí."},
@@ -316,7 +316,30 @@ function drawFront(g,p){
     `<circle cx="${eyeL.x.toFixed(1)}" cy="${eyeL.y.toFixed(1)}" r="2.4" class="eye"/><circle cx="${eyeR.x.toFixed(1)}" cy="${eyeR.y.toFixed(1)}" r="2.4" class="eye"/>`+
     path(pl([shR,...hold]),11,ACC)+path(pl([shL,...pull]),11,ACC);
 }
-function draw(svg,p){ const A=svg._anim, g=svg.querySelector(".body"); if(A.front) drawFront(g,p); else drawSide(g,p,A); }
+// čelní pohled: pánev hc, krk nk, hlava head; končetiny jako body; strana A = nk + kolmice
+const nrm=(x,y)=>{const l=Math.hypot(x,y)||1; return P(x/l,y/l);};
+const rot=(v,d)=>P(v.x*Math.cos(rad(d))-v.y*Math.sin(rad(d)), v.x*Math.sin(rad(d))+v.y*Math.cos(rad(d)));
+function drawFront2(g,p,A){
+  const hc=P(...p.hc), nk=P(...p.nk), hd=P(...p.head), dir=nrm(nk.x-hc.x,nk.y-hc.y), pp=P(-dir.y,dir.x);
+  const ps=rot(pp,p.st||0), ph=rot(pp,p.ht||0);
+  const shA=P(nk.x+p.sw*ps.x,nk.y+p.sw*ps.y), shB=P(nk.x-p.sw*ps.x,nk.y-p.sw*ps.y);
+  const hpA=P(hc.x+p.hw*ph.x,hc.y+p.hw*ph.y), hpB=P(hc.x-p.hw*ph.x,hc.y-p.hw*ph.y);
+  const pts=a=>a.map(q=>P(q[0],q[1]));
+  const leg=(h,l,far)=>path(pl([h,...pts(l)]),14,INK,far?"far":"");
+  const arm=(sh,a,far)=>path(pl([sh,...pts(a)]),11,ACC,far?"far":"");
+  const e=rot(P(1,0),p.ea||0), eo=rot(P(0,-1),p.ea||0);
+  const eye=k=>P(hd.x+k*5*e.x+1.5*eo.x, hd.y+k*5*e.y+1.5*eo.y);
+  const order=A.order||["legB","legA","torso","armB","armA","head"];
+  const parts={
+    legA:leg(hpA,p.legA,A.legsFar), legB:leg(hpB,p.legB,A.legsFar),
+    torso:path(pl([hc,nk]),30,INK)+path(pl([hpA,hpB]),22,INK)+path(pl([shA,shB]),18,INK),
+    armA:arm(shA,p.armA,A.farArm==="A"), armB:arm(shB,p.armB,A.farArm==="B"),
+    head:path(pl([nk,hd]),10,INK)+`<circle cx="${hd.x.toFixed(1)}" cy="${hd.y.toFixed(1)}" r="${L.head}" fill="currentColor"/>`+
+      [eye(-1),eye(1)].map(q=>`<circle cx="${q.x.toFixed(1)}" cy="${q.y.toFixed(1)}" r="2.4" class="eye"/>`).join("")
+  };
+  g.innerHTML=order.map(k=>parts[k]).join("");
+}
+function draw(svg,p){ const A=svg._anim, g=svg.querySelector(".body"); if(A.front===2) drawFront2(g,p,A); else if(A.front) drawFront(g,p); else drawSide(g,p,A); }
 
 // ---- polohy ----
 const ROLLER=(x)=>`<circle cx="${x}" cy="189" r="15" class="prop"/><circle cx="${x}" cy="189" r="5" class="prop2"/>`;
@@ -355,6 +378,24 @@ const trap0={tilt:0,holdX:150,holdY:142,hx:-6,hy:-14,mirror:0};
 const trap1={tilt:30,holdX:150,holdY:142,hx:-13,hy:-4,mirror:0};
 const trap1b={...trap1,mirror:1};
 
+const hyz0={hc:[200,168],hw:15,nk:[200,94],sw:27,head:[200,71],ea:0,
+  armA:[[236,140],[252,198]],armB:[[164,140],[148,198]],
+  legB:[[180,124],[176,196],[176,203]],legA:[[262,138],[190,121],[177,118]]};
+const hyz1={hc:[207,166],hw:15,nk:[224,96],sw:27,head:[231,74],ea:12,
+  armA:[[248,142],[252,198]],armB:[[172,142],[148,198]],
+  legB:[[180,124],[176,196],[176,203]],legA:[[266,138],[191,121],[178,118]]};
+// navlékání jehly – zepředu, na čtyřech; aktivní ruka A (vlevo)
+const jeh0={hc:[202,100],hw:0,nk:[200,114],sw:31,st:18,head:[192,136],ea:-20,
+  armA:[[163,58],[158,12]],armB:[[238,160],[238,199]],legA:[],legB:[]};
+const jeh1={hc:[205,124],hw:0,nk:[200,140],sw:31,st:-30,head:[176,176],ea:-28,
+  armA:[[214,191],[268,199]],armB:[[248,166],[238,199]],legA:[],legB:[]};
+// boční plank – zepředu (hrudník k divákovi), opora na předloktí A (dole)
+const bpl1={hc:[180,166],hw:8,nk:[272,138],sw:12,head:[293,132],ea:73,
+  armA:[[277,198],[268,204]],armB:[[242,104],[194,153]],
+  legA:[[118,185],[56,198],[56,205]],legB:[[116,176],[52,190],[50,197]]};
+const bpl0={hc:[176,190],hw:8,nk:[272,148],sw:12,head:[293,139],ea:66,
+  armA:[[277,198],[268,204]],armB:[[238,112],[188,176]],
+  legA:[[108,197],[40,199],[40,206]],legB:[[108,190],[40,192],[38,199]]};
 const K=(p,hold,move)=>({p,hold,move});
 const ANIMS={
   "Hrudní páteř":{face:-1,props:ROLLER(240),
@@ -362,19 +403,19 @@ const ANIMS={
          K(hrudniBase(170,192,-21),300,900),K({...hrudniBase(170,192,-21),chest:6,head:14},1500,900)],
     idle:[K(hrudniBase(158,184,-15),200,1300),K(hrudniBase(182,184,-20),200,1300)],
     pairs:[[hrudniBase(170,192,-21),{...hrudniBase(170,192,-21),chest:6,head:14}]]},
-  "Hýždě":{vb:"20 20 380 200",props:ROLLER(200),
-    seq:[K({hip:[188,170],torso:-135,head:40,armF:{ik:[116,200],bend:1},armN:{ik:[120,200],bend:1},legF:{a:[-32,180],ft:200},legN:{ik:[262,199],bend:-1,ft:0}},150,1500),
-         K({hip:[212,170],torso:-135,head:40,armF:{ik:[116,200],bend:1},armN:{ik:[120,200],bend:1},legF:{a:[-32,180],ft:200},legN:{ik:[262,199],bend:-1,ft:0}},150,1500)]},
+  "Hýždě":{front:2,vb:"40 30 320 185",order:["legB","torso","armB","armA","head","legA"],
+    props:`<rect x="146" y="177" width="108" height="27" rx="13" class="prop"/><ellipse cx="250" cy="190.5" rx="5" ry="13" class="prop2"/>`,
+    seq:[K(hyz0,300,1600),K(hyz1,1800,1600)]},
   "Přední stehno a kyčel":{props:ROLLER(180),
     seq:[K({hip:[200,166],torso:-12,head:-4,armF:{a:[90,0]},armN:{a:[90,0]},legF:{rel:"hip",dx:-136,dy:32,bend:1,ft:180},legN:{rel:"hip",dx:-134,dy:30,bend:1,ft:180}},150,1700),
          K({hip:[248,166],torso:-12,head:-4,armF:{a:[90,0]},armN:{a:[90,0]},legF:{rel:"hip",dx:-136,dy:32,bend:1,ft:180},legN:{rel:"hip",dx:-134,dy:30,bend:1,ft:180}},150,1700)]},
   "Kobra":{seq:[K(kobra0,700,1600),K(kobra1,2200,1600)]},
   "Kočka a kráva":{seq:[K(fours({torso:6,chest:-50,head:-15,armF:{a:[82,82]},armN:{a:[83,83]}}),900,1500),K(fours({torso:-27,chest:16,head:55}),900,1500)]},
-  "Navlékání jehly":{vb:"20 0 380 220",seq:[K(fours({chest:-16,head:-45,armN:{a:[-92,-90]}}),900,1500),K(fours({chest:35,head:40,armN:{a:[131,132]}}),1600,1500)]},
+  "Navlékání jehly":{front:2,vb:"40 -2 320 218",farArm:"B",order:["torso","armB","head","armA"],seq:[K(jeh0,900,1500),K(jeh1,1600,1500)]},
   "Bird dog":{seq:[K(fours(),600,1200),K(fours({head:6,armN:{a:[-6,-6]},legF:{a:[183,183],ft:95}}),1800,1200),K(fours(),600,1200),K(fours({head:6,armF:{a:[-6,-6]},legN:{a:[183,183],ft:95}}),1800,1200)],
     pairs:[[fours(),fours({head:6,armN:{a:[-6,-6]},legF:{a:[183,183],ft:95}})],[fours(),fours({head:6,armF:{a:[-6,-6]},legN:{a:[183,183],ft:95}})]],repMode:"side"},
   "Plank":{seq:[K(plank0,700,1200),K(plank1,3000,1200)],tl:[[0,30,1],[30,45,0],[45,75,1]]},
-  "Boční plank":{seq:[K(side0,700,1200),K(side1,3000,1200)],tl:[[0,29.5,1],[29.5,31.5,0],[31.5,60,1]]},
+  "Boční plank":{front:2,order:["legA","legB","torso","armA","head","armB"],seq:[K(bpl0,700,1200),K(bpl1,3000,1200)],tl:[[0,29.5,1],[29.5,31.5,0],[31.5,60,1]]},
   "Dead bug":{face:-1,seq:[K(dbug0,500,1100),K({...dbug0,armN:{a:[-14,-14]},legF:{a:[175,175],ft:180}},900,1100),K(dbug0,500,1100),K({...dbug0,armF:{a:[-16,-16]},legN:{a:[174,174],ft:180}},900,1100)],
     pairs:[[dbug0,{...dbug0,armN:{a:[-14,-14]},legF:{a:[175,175],ft:180}}],[dbug0,{...dbug0,armF:{a:[-16,-16]},legN:{a:[174,174],ft:180}}]],repMode:"alt"},
   "Hýžďový most":{face:-1,seq:[K(most0,700,1100),K(most1,1800,1100)]},
