@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sestava 2 – protažení (cyklista)</title>
+<style>
+  :root{
+    --bg:#f6f7f9; --card:#fff; --ink:#1d2430; --muted:#5d6675; --line:#e3e6eb;
+    --b1:#2f7d6d; --b2:#3a6fb0; --b3:#c0662b; --b4:#7a4fb0; --b5:#b0434f; --b6:#5b7a2e;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#14171c; --card:#1d2129; --ink:#e7eaef; --muted:#9aa3b1; --line:#2c323c; }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  .wrap{max-width:760px;margin:0 auto;padding:20px 16px 60px}
+  h1{font-size:1.6rem;line-height:1.25;margin:8px 0 4px}
+  h2{font-size:1.2rem;margin:32px 0 12px}
+  .sub{color:var(--muted);margin:0 0 16px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin:12px 0}
+  .pills{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+  .pill{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:4px 12px;font-size:.9rem}
+  ul{padding-left:20px;margin:8px 0} li{margin:4px 0}
+  .start{display:block;width:100%;margin:20px 0 4px;padding:14px;border:0;border-radius:12px;background:var(--b1);color:#fff;font-size:1.05rem;font-weight:600;cursor:pointer}
+  table{width:100%;border-collapse:collapse;font-size:.95rem}
+  th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--muted);font-weight:600;font-size:.85rem}
+  td.n,td.t{white-space:nowrap} td.t{text-align:right} th.t{text-align:right}
+  tr.total td{font-weight:700;border-bottom:0}
+  .tag{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:middle}
+  .block{border-left:5px solid var(--c);}
+  .block h3{margin:0 0 8px;font-size:1.05rem;display:flex;justify-content:space-between;gap:8px}
+  .block h3 span{color:var(--muted);font-weight:500;font-size:.9rem;white-space:nowrap}
+  .ex{display:flex;gap:10px;margin:10px 0}
+  .num{flex:0 0 28px;height:28px;border-radius:50%;background:var(--c);color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center;font-size:.85rem}
+  .ex b{display:block}
+  .dose{color:var(--muted);font-size:.9rem}
+  .note{font-size:.9rem;color:var(--muted);margin-top:8px}
+  .warn{border-color:#e0b4b4;background:color-mix(in srgb,var(--card) 88%,#d9534f)}
+  /* časovač */
+  #timer{position:fixed;inset:0;background:var(--bg);display:none;flex-direction:column;padding:20px 16px;z-index:10}
+  #timer.on{display:flex}
+  .tbar{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:.9rem}
+  .tclose{background:none;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:6px 12px;font-size:.9rem;cursor:pointer}
+  .tmain{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;max-width:560px;margin:0 auto;width:100%}
+  .tblock{font-weight:600;color:var(--c)}
+  .tname{font-size:1.9rem;font-weight:700;margin:6px 0}
+  .tdose{font-size:1.15rem;color:var(--muted)}
+  .tclock{font-size:4.5rem;font-weight:700;font-variant-numeric:tabular-nums;margin:18px 0 6px}
+  .tdesc{font-size:1rem;line-height:1.5;margin-top:8px}
+  .tnext{color:var(--muted);font-size:.9rem;margin-top:16px}
+  .prog{height:6px;background:var(--line);border-radius:3px;overflow:hidden;margin:10px 0}
+  .prog i{display:block;height:100%;background:var(--c);width:0;transition:width .3s}
+  .tctrl{display:flex;gap:10px;max-width:560px;margin:0 auto;width:100%}
+  .tctrl button{flex:1;padding:16px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);font-size:1.05rem;font-weight:600;cursor:pointer}
+  .tctrl button.main{background:var(--c);color:#fff;border:0;flex:1.4}
+  /* velká obrazovka (TV): písmo roste s velikostí okna */
+  #timer{padding:clamp(20px,2.5vmin,40px) clamp(16px,3vw,60px)}
+  .tbar{font-size:clamp(.9rem,2.4vmin,1.6rem)}
+  .tclose{font-size:clamp(.9rem,2.2vmin,1.4rem);padding:.35em .8em}
+  .prog{height:clamp(6px,1vmin,12px);border-radius:6px}
+  .tmain{max-width:min(1500px,94vw)}
+  .tblock{font-size:clamp(1rem,3.4vmin,3rem)}
+  .tname{font-size:clamp(1.9rem,7.5vmin,6.5rem);line-height:1.15;margin:.15em 0}
+  .tdose{font-size:clamp(1.15rem,4.4vmin,3.6rem)}
+  .tclock{font-size:clamp(4.5rem,23vmin,17rem);line-height:1;margin:.15em 0 .1em}
+  .tdesc{font-size:clamp(1rem,4.6vmin,3.6rem);line-height:1.35;max-width:32em}
+  .tnext{font-size:clamp(.9rem,3vmin,2.4rem)}
+  .tctrl{max-width:min(1100px,94vw)}
+  .tctrl button{font-size:clamp(1.05rem,3.2vmin,2.4rem);padding:.7em}
+  #timer.on{cursor:default}
+  @media (max-width:600px){ .lbl{display:none} }
+  /* animace */
+  .fig{width:100%;height:auto;display:block;color:var(--ink)}
+  .fig .floor{stroke:var(--line);stroke-width:4;stroke-linecap:round}
+  .fig .far{opacity:.38}
+  .fig .eye{fill:var(--card,#fff)}
+  .fig .vlabel{font:600 11px system-ui,sans-serif;fill:var(--muted,#888)}
+  .fig .prop{fill:color-mix(in srgb,#c0662b 55%,var(--card))}
+  .fig .prop2{fill:color-mix(in srgb,#c0662b 80%,var(--ink))}
+  .fig .propl{stroke:color-mix(in srgb,var(--muted) 70%,transparent);stroke-width:7;fill:none;stroke-linecap:round}
+  .fig .mat{fill:color-mix(in srgb,var(--c,#2f7d6d) 30%,transparent)}
+  .exanim{max-width:360px;margin:8px 0 2px;background:color-mix(in srgb,var(--card) 92%,var(--c));border-radius:10px;padding:4px}
+  .tvis{display:none;width:100%;max-width:min(560px,80vw);margin:0 auto}
+  .tvis.has{display:block}
+  .ttext{width:100%}
+  @media (min-width:800px) and (min-aspect-ratio:5/4){
+    .tmain.wide{display:grid;grid-template-columns:1fr 1.15fr;align-items:center;gap:3vw;max-width:min(1700px,96vw)}
+    .tmain.wide .tvis{max-width:none}
+    .tmain.wide .tclock{font-size:clamp(4.5rem,19vmin,14rem)}
+    .tmain.wide .tdesc{font-size:clamp(1rem,3.8vmin,3rem)}
+    .tmain.wide .tname{font-size:clamp(1.9rem,6.5vmin,5.5rem)}
+  }
+  @media (max-aspect-ratio:5/4){ .tvis.has{max-width:min(480px,70vw)} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Sestava 2 – protažení</h1>
+  <p class="sub"><a href="https://ihynek.github.io/trenink/">← Sestava 1 – válec a posílení zad</a></p>
+  <p class="sub"><span id="subTime"></span> · 15 cviků v 6 blocích · Ivan H, 17. 11. 2026</p>
+
+  <div class="pills">
+    <span class="pill">večer nebo po jízdě</span>
+    <span class="pill">záda, krk, prsa, přední a zadní strana nohou</span>
+    <span class="pill">cíl: uvolnit ramena a vrátit bedrům přirozenou lordózu</span>
+  </div>
+
+  <button class="start" id="startBtn">▶ Spustit sestavu s časovačem</button>
+  <p class="sub" style="margin-top:6px">U výdrží hlas ohlásí výměnu strany. U cviků na opakování: <b>vysoký tón</b> = pohyb do polohy, <b>nízký tón</b> = zpět.</p>
+
+  <h2>Proč toto pořadí</h2>
+  <div class="card">
+    <ul>
+      <li><b>Jen protažení a uvolnění,</b> žádné posilování. Posilování je v Sestavě 1.</li>
+      <li><b>Plochá bedra:</b> nejdřív protáhnout zadní stehna a hýždě, které podsazují pánev. Pak sfinga a náklony pánve, aby bedra znovu uměla do lordózy. Cviky, které bedra kulatí, tu nejsou.</li>
+      <li><b>Ramena tažená dopředu:</b> otevírání knihy, leh na válci podélně a protažení prsních svalů ve dveřích. Hrudník se otevře a ramena se vrátí dozadu.</li>
+      <li><b>Pánev u cviků v kleku a ve stoji v neutrálu:</b> nepodsazovat ji. Podsazování by bedra zase zplošťovalo.</li>
+      <li><b>Plynulé polohy:</b> záda → bok → válec → břicho a na čtyřech → klek a stoj → sed.</li>
+    </ul>
+    <p style="margin:10px 0 0"><b>Pomůcky:</b> podložka, popruh nebo ručník, pěnový válec, židle, zeď a zárubeň dveří.</p>
+  </div>
+
+  <h2>Sestava v pořadí</h2>
+  <div class="card" style="padding:8px 12px">
+    <table id="tbl">
+      <thead><tr><th>#</th><th>Cvik</th><th>Dávka</th><th class="t">Čas</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <h2>Jak cviky dělat</h2>
+  <div id="blocks"></div>
+
+  <h2>Zásady</h2>
+  <div class="card">
+    <ul>
+      <li><b>Dýchání:</b> s každým výdechem povolit a jít o kousek dál. Dech nezadržovat.</li>
+      <li><b>Míra:</b> příjemný tah, ne bolest. Žádné pérování.</li>
+      <li><b>Kdy:</b> nejlépe večer nebo po jízdě, kdy jsou svaly teplé. Může být i v jiný den než Sestava 1.</li>
+      <li><b>Během dne:</b> v sedu na židli občas překlop pánev dopředu a sedni si na sedací kosti. Pro lordózu je to stejně důležité jako cvičení.</li>
+    </ul>
+  </div>
+
+  <h2>Progrese</h2>
+  <div class="card">
+    <ul>
+      <li>Po 2–3 týdnech prodluž výdrže o 10–15 s, celá sestava pak bude mít asi 20 minut.</li>
+      <li>Ochabování lordózy a ramen se nemění za týden. Počítej s 2–3 měsíci pravidelného cvičení spolu s posilováním v Sestavě 1.</li>
+    </ul>
+  </div>
+
+  <div class="card warn">
+    Pokud se objeví ostrá bolest nebo brnění do rukou či nohou, cvik vynech a poraď se s fyzioterapeutem.
+  </div>
+</div>
+
+<div id="timer">
+  <div class="tbar"><span id="tcount"></span><span><button class="tclose" id="tFull">⛶<span class="lbl"> Celá obrazovka</span></button> <button class="tclose" id="tVoice">🔊 Hlas</button> <button class="tclose" id="tClose">✕ Zavřít</button></span></div>
+  <div class="prog"><i id="tprog"></i></div>
+  <div class="tmain">
+    <div class="tvis" id="tvis"></div>
+    <div class="ttext">
+    <div class="tblock" id="tblock"></div>
+    <div class="tname" id="tname"></div>
+    <div class="tdose" id="tdose"></div>
+    <div class="tclock" id="tclock"></div>
+    <div class="tdesc" id="tdesc"></div>
+    <div class="tnext" id="tnext"></div>
+    </div>
+  </div>
+  <div class="tctrl">
+    <button id="tPrev">◀</button>
+    <button class="main" id="tPlay">Start</button>
+    <button id="tNext">▶</button>
+  </div>
+</div>
+
+<script>
+const BLOCKS = [
+  {name:"Na zádech", pos:"Na zádech", c:"--b1", ex:[
+    {n:"Zadní stehno s popruhem", d:"40 s na stranu", s:85, t:"Popruh kolem chodidla, zvednout nataženou nohu, koleno rovné. Druhá noha leží natažená. Pod bedry nech přirozenou mezeru, nezatlačuj je do země."},
+    {n:"Čtyřka vleže", d:"35 s na stranu", s:75, t:"Leh na zádech, kotník přes protilehlé koleno. Chytit stehno spodní nohy a přitáhnout ho k hrudníku. Táhne v hýždi přeložené nohy."}
+  ]},
+  {name:"Na boku", pos:"Na boku", c:"--b2", ex:[
+    {n:"Otevírání knihy", d:"6× na stranu, výdrž 3 s", s:70, t:"Leh na boku, kolena pokrčená před sebou, ruce natažené před hrudníkem. Horní ruka opíše oblouk přes strop na druhou stranu, hlava ji sleduje. Kolena zůstávají u sebe na zemi."}
+  ]},
+  {name:"Na válci podélně", pos:"Na válci", c:"--b3", ex:[
+    {n:"Otevření hrudníku na válci", d:"60 s", s:60, t:"Leh na válci podél páteře, hlava i pánev na válci, chodidla na zemi. Ruce do stran do T, dlaně ke stropu, nechat je volně klesat k zemi. Prsa se pasivně otevírají."}
+  ]},
+  {name:"Na břiše a na čtyřech", pos:"Na čtyřech", c:"--b4", ex:[
+    {n:"Sfinga", pos:"Na břiše", d:"2× 25 s, pauza 10 s", s:60, t:"Leh na břiše, opora o předloktí, lokty pod rameny. Pánev zůstává na zemi, bedra se volně prohnou. Ramena dolů od uší, krk dlouhý."},
+    {n:"Náklony pánve na čtyřech", d:"8× pomalu", s:45, t:"Na čtyřech, ruce pod rameny, kolena pod kyčlemi. Překlopit pánev dopředu (kostrč ke stropu, bedra se prohnou), pak zpět do rovných zad. Hrudník se nehýbe."},
+    {n:"Dětský sed široký", d:"20 s středem, 20 s vpravo, 20 s vlevo", s:60, t:"Kolena široko, sednout na paty, ruce natažené daleko před sebe. Pak ruce šikmo vpravo a vlevo pro boky zad. Tlačit dlaněmi do podložky, bedra nekulatit."}
+  ]},
+  {name:"Klek a stoj", pos:"Klek", c:"--b5", ex:[
+    {n:"Kyčelní flexor", d:"35 s na stranu", s:75, t:"Jedna noha vpředu, zadní koleno na podložce. Pánev v neutrálu, nepodsazovat. Celé tělo posunout dopředu, až táhne vpředu v kyčli zadní nohy."},
+    {n:"Přední stehno ve stoje", pos:"Stoj", d:"30 s na stranu", s:65, t:"Opora rukou o zeď, chytit kotník a přitáhnout patu k hýždi. Kolena u sebe, pánev nepodsazovat a nezaklánět se."},
+    {n:"Lýtko u zdi", pos:"Stoj", d:"30 s na stranu", s:65, t:"Ruce o zeď, zadní noha natažená, pata na zemi, špička směřuje dopředu. Přední koleno pokrčit a boky posunout ke zdi."},
+    {n:"Prsní sval ve dveřích", pos:"Stoj", d:"30 s na stranu", s:65, t:"Předloktí na zárubni, loket ve výšce ramene. Malý krok vpřed a hrudník otočit od ruky. Táhne v prsním svalu a přední části ramene."}
+  ]},
+  {name:"Sed na židli", pos:"Sed", c:"--b6", ex:[
+    {n:"Předklon v sedu", d:"35 s na stranu", s:75, t:"Sed na kraji židle, jedna noha natažená na patě. Předklon z kyčlí s rovnými zády: pánev klopit dopředu, hrudník k noze. Záda nekulatit, stačí malý předklon."},
+    {n:"Náklony pánve v sedu", d:"10× pomalu", s:45, t:"Sed vzpřímeně. Překlopit pánev dopředu (bedra se prohnou, sedíš na předním okraji sedacích kostí), pak dozadu. Pohyb je jen v pánvi a bedrech."},
+    {n:"Protahování trapézu", d:"30 s na stranu", s:65, t:"Jednou rukou držet židli, druhou jemně přitáhnout hlavu k opačnému rameni. Ramena dolů."},
+    {n:"Zdvihač lopatky", d:"25 s na stranu", s:55, t:"Jednou rukou držet židli. Otočit hlavu o 45° a sklopit nos k podpaží druhé strany, druhou rukou jemně přitlačit zátylek."}
+  ]}
+];
+
+const fmt = s => Math.floor(s/60)+":"+String(s%60).padStart(2,"0");
+const ALL = [];
+BLOCKS.forEach((b,bi)=>b.ex.forEach(e=>ALL.push({...e,b,bi,i:ALL.length+1})));
+
+// tabulka
+const tb = document.querySelector("#tbl tbody");
+ALL.forEach(e=>{
+  tb.insertAdjacentHTML("beforeend",
+    `<tr><td class="n">${e.i}</td><td><span class="tag" style="background:var(${e.b.c})"></span>${e.n}<div class="dose">${e.pos||e.b.pos}</div></td><td>${e.d}</td><td class="t">${fmt(e.s)}</td></tr>`);
+});
+tb.insertAdjacentHTML("beforeend",`<tr class="total"><td></td><td>Celkem</td><td></td><td class="t">${fmt(ALL.reduce((a,e)=>a+e.s,0))}</td></tr>`);
+
+// bloky
+const bl = document.getElementById("blocks");
+BLOCKS.forEach((b,bi)=>{
+  const exs = ALL.filter(e=>e.bi===bi).map(e=>
+    `<div class="ex"><div class="num">${e.i}</div><div style="flex:1"><b>${e.n}</b><span class="dose">${e.d}</span><div>${e.t}</div><div class="exanim" data-anim="${e.n}"></div></div></div>`).join("");
+  bl.insertAdjacentHTML("beforeend",
+    `<div class="card block" style="--c:var(${b.c})"><h3>Blok ${bi+1} – ${b.name}<span>${fmt(ALL.filter(e=>e.bi===bi).reduce((a,e)=>a+e.s,0))} min</span></h3>${exs}${b.note?`<div class="note">${b.note}</div>`:""}</div>`);
+});
+
+// ===== animace postavy (kloubová kostra, boční pohled; trapéz zepředu) =====
+const L={lt:60,ut:35,neck:22,head:15,ua:48,fa:46,th:72,sh:70,ft:18};
+const rad=d=>d*Math.PI/180, P=(x,y)=>({x,y});
+const step=(p,a,l)=>P(p.x+l*Math.cos(rad(a)),p.y+l*Math.sin(rad(a)));
+function ik(A,T,l1,l2,bend){
+  const dx=T.x-A.x, dy=T.y-A.y, d=Math.max(1,Math.min(Math.hypot(dx,dy),l1+l2-0.01)), base=Math.atan2(dy,dx);
+  const a=Math.acos(Math.max(-1,Math.min(1,(l1*l1+d*d-l2*l2)/(2*l1*d))));
+  const J=P(A.x+l1*Math.cos(base+bend*a),A.y+l1*Math.sin(base+bend*a));
+  return [J,step(J,Math.atan2(T.y-J.y,T.x-J.x)*180/Math.PI,l2)];
+}
+function target(spec,s){
+  if(spec.rel==="head") return P(s.hd.x+spec.dx,s.hd.y+spec.dy);
+  if(spec.rel==="hip")  return P(s.H.x+spec.dx,s.H.y+spec.dy);
+  return P(spec.ik[0],spec.ik[1]);
+}
+function limb(A,spec,l1,l2,s){
+  if(spec.ik||spec.rel) return ik(A,target(spec,s),l1,l2,spec.bend||1);
+  const J=step(A,spec.a[0],l1); return [J,step(J,spec.a[1],l2)];
+}
+function solve(p){
+  const ch=p.chest??p.torso;
+  const H=P(p.hip[0],p.hip[1]), M=step(H,p.torso,L.lt), N=step(M,ch,L.ut), S=step(M,ch,L.ut*0.75);
+  const ha=ch+(p.head||0), hd=step(N,ha,L.neck);
+  const s={H,M,N,S,hd,ha,arms:[],legs:[]};
+  for(const k of ["legF","legN"]){ const [K,A]=limb(H,p[k],L.th,L.sh,s); s.legs.push([H,K,A,step(A,p[k].ft??0,L.ft)]); }
+  for(const k of ["armF","armN"]){ const [E,W]=limb(S,p[k],L.ua,L.fa,s); s.arms.push([S,E,W]); }
+  return s;
+}
+const lerp=(a,b,t)=> typeof a==="number" ? a+(b-a)*t
+  : Array.isArray(a) ? a.map((v,i)=>lerp(v,b[i],t))
+  : (a&&typeof a==="object") ? Object.fromEntries(Object.keys(a).map(k=>[k, k==="mirror"?b[k]:lerp(a[k],b[k],t)])) : a;
+// poloha s končetinami různého typu (úhly × cíl ruky) → převést na úhly
+const ang=(p,q)=>Math.atan2(q.y-p.y,q.x-p.x)*180/Math.PI;
+const lerpA=(a,b,t)=>a+(((b-a+540)%360)-180)*t;
+function limbAngles(p,s,k){
+  const legs={legF:0,legN:1}, arms={armF:0,armN:1};
+  if(k in legs){ const [H,Kn,A,T]=s.legs[legs[k]]; return {a:[ang(H,Kn),ang(Kn,A)],ft:ang(A,T)}; }
+  const [S,E,W]=s.arms[arms[k]]; return {a:[ang(S,E),ang(E,W)]};
+}
+const kind=x=>x.a?"a":x.rel?"rel:"+x.rel:"ik";
+function lerpPose(a,b,t){
+  if(!a.hip) return lerp(a,b,t);
+  const out=lerp(Object.fromEntries(Object.entries(a).filter(([k])=>!/^(arm|leg)/.test(k))),Object.fromEntries(Object.entries(b).filter(([k])=>!/^(arm|leg)/.test(k))),t);
+  let sa=null,sb=null;
+  for(const k of ["armF","armN","legF","legN"]){
+    if(kind(a[k])===kind(b[k])) out[k]=lerp(a[k],b[k],t);
+    else { sa=sa||solve(a); sb=sb||solve(b); const x=limbAngles(a,sa,k), y=limbAngles(b,sb,k);
+      out[k]={a:[lerpA(x.a[0],y.a[0],t),lerpA(x.a[1],y.a[1],t)]}; if(x.ft!=null) out[k].ft=lerpA(x.ft,y.ft,t); }
+  }
+  return out;
+}
+const ease=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
+const pl=pts=>pts.map((q,i)=>(i?"L":"M")+q.x.toFixed(1)+" "+q.y.toFixed(1)).join(" ");
+const path=(d,w,col,cls)=>`<path${cls?` class="${cls}"`:""} d="${d}" stroke="${col}" stroke-width="${w}" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`;
+const INK="currentColor", ACC="var(--c,#2f7d6d)";
+function drawSide(g,p,A){
+  const s=solve(p), face=A.face??1, ea=(p.eye!=null?p.eye:s.ha+90*face), eye=step(s.hd,ea,6.5);
+  g.innerHTML =
+    path(pl(s.legs[0]),13,INK,A.solid?"":"far")+path(pl(s.arms[0]),11,ACC,"far")+
+    path(pl([s.H,s.M,s.N]),22,INK)+path(pl([s.N,s.hd]),10,INK)+
+    `<circle cx="${s.hd.x.toFixed(1)}" cy="${s.hd.y.toFixed(1)}" r="${L.head}" fill="currentColor"/>`+
+    `<circle cx="${eye.x.toFixed(1)}" cy="${eye.y.toFixed(1)}" r="2.6" class="eye"/>`+
+    path(pl(s.legs[1]),13,INK)+path(pl(s.arms[1]),11,ACC)+
+    (A.extra?A.extra(s,p):"");
+}
+// pohled zepředu (sed na židli) – jen pro trapéz
+function drawFront(g,p){
+  const m=p.mirror?-1:1, X=x=>200+m*(x-200);
+  const hipC=P(200,128), neck=P(200,42), shR=P(X(172),54), shL=P(X(228),54);
+  const t=p.tilt*m, nod=p.nod||0, hd=P(neck.x+22*Math.sin(rad(t))+m*nod*0.3, neck.y-22*Math.cos(rad(t))+nod), tu=m*(p.turn||0);
+  const hold=ik(shR,P(X(p.holdX),p.holdY),L.ua,L.fa,m*-1);           // ruka drží židli
+  const pt=P(hd.x+m*p.hx, hd.y+p.hy), pull=ik(shL,pt,L.ua,L.fa,m);  // ruka přes hlavu
+  const eyeL=P(hd.x+tu-5*Math.cos(rad(t))+1.5*Math.sin(rad(t)),hd.y+nod*0.25-5*Math.sin(rad(t))-1.5*Math.cos(rad(t)));
+  const eyeR=P(hd.x+tu+5*Math.cos(rad(t))+1.5*Math.sin(rad(t)),hd.y+nod*0.25+5*Math.sin(rad(t))-1.5*Math.cos(rad(t)));
+  g.innerHTML =
+    path(pl([P(186,130),P(180,150),P(178,198)]),13,INK)+path(pl([P(214,130),P(220,150),P(222,198)]),13,INK)+
+    path(pl([hipC,neck]),30,INK)+path(pl([shR,shL]),16,INK)+path(pl([neck,hd]),10,INK)+
+    `<circle cx="${hd.x.toFixed(1)}" cy="${hd.y.toFixed(1)}" r="${L.head}" fill="currentColor"/>`+
+    `<circle cx="${eyeL.x.toFixed(1)}" cy="${eyeL.y.toFixed(1)}" r="2.4" class="eye"/><circle cx="${eyeR.x.toFixed(1)}" cy="${eyeR.y.toFixed(1)}" r="2.4" class="eye"/>`+
+    path(pl([shR,...hold]),11,ACC)+path(pl([shL,...pull]),11,ACC);
+}
+// čelní pohled: pánev hc, krk nk, hlava head; končetiny jako body; strana A = nk + kolmice
+const nrm=(x,y)=>{const l=Math.hypot(x,y)||1; return P(x/l,y/l);};
+const rot=(v,d)=>P(v.x*Math.cos(rad(d))-v.y*Math.sin(rad(d)), v.x*Math.sin(rad(d))+v.y*Math.cos(rad(d)));
+function drawFront2(g,p,A){
+  const hc=P(...p.hc), nk=P(...p.nk), hd=P(...p.head), dir=nrm(nk.x-hc.x,nk.y-hc.y), pp=P(-dir.y,dir.x);
+  const ps=rot(pp,p.st||0), ph=rot(pp,p.ht||0);
+  const shA=p.shA?P(...p.shA):P(nk.x+p.sw*ps.x,nk.y+p.sw*ps.y), shB=p.shB?P(...p.shB):P(nk.x-p.sw*ps.x,nk.y-p.sw*ps.y);
+  const hpA=p.hpA?P(...p.hpA):P(hc.x+p.hw*ph.x,hc.y+p.hw*ph.y), hpB=p.hpB?P(...p.hpB):P(hc.x-p.hw*ph.x,hc.y-p.hw*ph.y);
+  const pts=a=>a.map(q=>P(q[0],q[1]));
+  const leg=(h,l,far)=>path(pl([h,...pts(l)]),14,INK,far?"far":"");
+  const armPts=(sh,a)=> Array.isArray(a) ? pts(a) : (()=>{ const E=step(sh,a.a[0],L.ua); return [E,step(E,a.a[1],L.fa)]; })();
+  const arm=(sh,a,far)=>path(pl([sh,...armPts(sh,a)]),11,ACC,far?"far":"");
+  const e=rot(P(1,0),p.ea||0), eo=rot(P(0,-1),p.ea||0);
+  const eye=k=>P(hd.x+k*5*e.x+1.5*eo.x, hd.y+k*5*e.y+1.5*eo.y);
+  const order=A.order||["legB","legA","torso","armB","armA","head"];
+  const parts={
+    legA:leg(hpA,p.legA,A.legsFar), legB:leg(hpB,p.legB,A.legsFar),
+    torso:path(pl([hc,nk]),30,INK)+path(pl([hpA,hpB]),22,INK)+path(pl([shA,shB]),18,INK),
+    armA:arm(shA,p.armA,A.farArm==="A"), armB:arm(shB,p.armB,A.farArm==="B"),
+    head:path(pl([nk,hd]),10,INK)+`<circle cx="${hd.x.toFixed(1)}" cy="${hd.y.toFixed(1)}" r="${L.head}" fill="currentColor"/>`+
+      (A.noEyes?[]:[eye(-1),eye(1)]).map(q=>`<circle cx="${q.x.toFixed(1)}" cy="${q.y.toFixed(1)}" r="2.4" class="eye"/>`).join("")
+  };
+  g.innerHTML=order.map(k=>parts[k]).join("")+(A.extraF?A.extraF(p):"");
+}
+function draw(svg,p){ const A=svg._anim, g=svg.querySelector(".body"); if(A.front===2) drawFront2(g,p,A); else if(A.front) drawFront(g,p); else drawSide(g,p,A); }
+
+// ---- polohy ----
+const ROLLER=(x)=>`<circle cx="${x}" cy="189" r="15" class="prop"/><circle cx="${x}" cy="189" r="5" class="prop2"/>`;
+const CHAIR=`<path d="M146 142 H222 M152 142 V204 M216 142 V204 M149 142 V66" class="propl"/>`;
+const CHAIR_F=`<path d="M156 140 H244 M160 140 V204 M240 140 V204" class="propl"/>`;
+const legsFloor={legF:{a:[180,180],ft:180},legN:{a:[180,180],ft:180}};
+// na čtyřech
+const fours=(o={})=>Object.assign({hip:[185,126],torso:-12,chest:-12,head:12,
+  armF:{ik:[267,200],bend:1},armN:{ik:[271,200],bend:1},
+  legF:{a:[90,180],ft:180},legN:{a:[90,180],ft:180}},o);
+// na zádech s pokrčenýma nohama (hlava vpravo)
+const supineK=(o={})=>Object.assign({hip:[170,192],torso:0,chest:0,head:0,
+  armF:{ik:[158,200],bend:1},armN:{ik:[161,200],bend:1},
+  legF:{ik:[92,199],bend:1,ft:180},legN:{ik:[96,199],bend:1,ft:180}},o);
+
+const hrudniBase=(x,y,a)=>({hip:[x,y],torso:a,chest:a,head:6,
+  armF:{rel:"head",dx:2,dy:12,bend:-1},armN:{rel:"head",dx:-2,dy:13,bend:-1},
+  legF:{ik:[92,199],bend:1,ft:180},legN:{ik:[96,199],bend:1,ft:180}});
+const kobra0={hip:[190,190],torso:-1,head:-12,armF:{ik:[268,203],bend:1},armN:{ik:[272,203],bend:1},legF:{a:[181,180],ft:180},legN:{a:[180,180],ft:180}};
+const kobra1={...kobra0,torso:-33,head:-4};
+const plank1={hip:[186,170],torso:-11.8,head:0,armF:{a:[90,0]},armN:{a:[90,0]},legF:{a:[168.2,168.2],ft:105},legN:{a:[168.2,168.2],ft:105}};
+const plank0={hip:[192,188],torso:-25,head:14,armF:{a:[90,0]},armN:{a:[90,0]},legF:{a:[172,180],ft:180},legN:{a:[172,180],ft:180}};
+const side1={...plank1,armF:{a:[90,0]},armN:{rel:"hip",dx:6,dy:-9,bend:1}};
+const side0={hip:[186,190],torso:-26,head:10,armF:{a:[90,0]},armN:{rel:"hip",dx:6,dy:-9,bend:1},legF:{a:[180,180],ft:180},legN:{a:[180,180],ft:180}};
+const dbug0={hip:[185,193],torso:0,head:0,armF:{a:[-90,-90]},armN:{a:[-88,-88]},legF:{a:[-90,180],ft:-90},legN:{a:[-88,180],ft:-90}};
+const most0=supineK({head:0});
+const most1=supineK({hip:[180,156],torso:26.6,chest:26.6,head:-26.6});
+const strap0={hip:[178,193],torso:0,head:0,armF:{ik:[226,150],bend:1},armN:{ik:[230,148],bend:1},legF:{a:[180,180],ft:-90},legN:{a:[180,180],ft:-90}};
+const strap1={...strap0,armF:{ik:[226,118],bend:1},armN:{ik:[230,116],bend:1},legN:{a:[-96,-96],ft:-10}};
+const flex0={hip:[175,130],torso:-90,head:0,armF:{rel:"hip",dx:10,dy:-12,bend:1},armN:{rel:"hip",dx:14,dy:-10,bend:1},
+  legF:{a:[109.2,180],ft:180},legN:{ik:[255,199],bend:-1,ft:0}};
+const flex1={...flex0,hip:[195,140],legF:{a:[127,180],ft:180}};
+const brada0={hip:[175,130],torso:-90,head:20,armF:{ik:[226,124],bend:1},armN:{ik:[230,124],bend:1},legF:{a:[0,90],ft:0},legN:{a:[2,90],ft:0}};
+const brada1={...brada0,head:-14};
+const trap0={tilt:0,holdX:150,holdY:142,hx:-6,hy:-14,mirror:0};
+const trap1={tilt:30,holdX:150,holdY:142,hx:-13,hy:-4,mirror:0};
+const trap1b={...trap1,mirror:1};
+
+const hyz0={hc:[200,168],hw:15,nk:[200,94],sw:27,head:[200,71],ea:0,
+  armA:[[236,140],[252,198]],armB:[[164,140],[148,198]],
+  legB:[[180,124],[176,196],[176,203]],legA:[[262,138],[190,121],[177,118]]};
+const hyz1={hc:[207,166],hw:15,nk:[224,96],sw:27,head:[231,74],ea:12,
+  armA:[[248,142],[252,198]],armB:[[172,142],[148,198]],
+  legB:[[180,124],[176,196],[176,203]],legA:[[266,138],[191,121],[178,118]]};
+// navlékání jehly – zepředu, na čtyřech; aktivní ruka A (vlevo)
+const jeh0={hc:[202,100],hw:0,nk:[200,114],sw:31,st:18,head:[192,136],ea:-20,
+  armA:[[163,58],[158,12]],armB:[[238,160],[238,199]],legA:[],legB:[]};
+const jeh1={hc:[205,124],hw:0,nk:[200,140],sw:31,st:-30,head:[176,176],ea:-28,
+  armA:[[214,191],[268,199]],armB:[[248,166],[238,199]],legA:[],legB:[]};
+// boční plank – zepředu (hrudník k divákovi), opora na předloktí A (dole)
+const bpl1={hc:[180,166],hw:8,nk:[272,138],sw:12,head:[293,132],ea:73,
+  armA:[[277,198],[268,204]],armB:[[242,104],[194,153]],
+  legA:[[118,185],[56,198],[56,205]],legB:[[116,176],[52,190],[50,197]]};
+const bpl0={hc:[176,190],hw:8,nk:[272,148],sw:12,head:[293,139],ea:66,
+  armA:[[277,198],[268,204]],armB:[[238,112],[188,176]],
+  legA:[[108,197],[40,199],[40,206]],legB:[[108,190],[40,192],[38,199]]};
+// T zdvihy – zepředu (od hlavy), leh na břiše
+const tz0={hc:[200,170],hw:0,nk:[200,190],sw:32,head:[200,197],ea:0,armB:[[250,197],[296,199]],armA:[[150,197],[104,199]],legA:[],legB:[]};
+const tz1={hc:[200,170],hw:0,nk:[200,188],sw:27,head:[200,194],ea:0,armB:[[245,176],[288,158]],armA:[[155,176],[112,158]],legA:[],legB:[]};
+// Y zdvihy a superman – z boku, leh na břiše, ruce nad hlavou
+const yz0={hip:[186,190],torso:-1,head:-8,armF:{a:[0,0]},armN:{a:[1,1]},legF:{a:[181,180],ft:180},legN:{a:[180,180],ft:180}};
+const yz1={...yz0,torso:-3,head:-10,armF:{a:[-9,-9]},armN:{a:[-10,-10]}};
+const sm1={...yz0,torso:-11,head:-6,armF:{a:[-15,-15]},armN:{a:[-16,-16]},legF:{a:[184,184],ft:182},legN:{a:[185,185],ft:182}};
+// zvedání kolen – sed na židli
+const zk0={hip:[175,130],torso:-88,head:4,armF:{ik:[198,140],bend:-1},armN:{ik:[202,140],bend:-1},legF:{a:[0,90],ft:0},legN:{a:[2,90],ft:0}};
+const zk1={...zk0,legN:{a:[-16,86],ft:0}}, zk1b={...zk0,legF:{a:[-16,86],ft:0}};
+// roztahování gumy – zepředu, sed na židli
+const gm0={hc:[200,128],hw:15,nk:[200,46],sw:28,head:[200,23],ea:0,
+  armA:[[220,74],[212,86]],armB:[[180,74],[188,86]],
+  legA:[[216,150],[222,198],[224,205]],legB:[[184,150],[178,198],[176,205]]};
+const gm1={...gm0,sw:25,armA:[[268,52],[314,54]],armB:[[132,52],[86,54]]};
+const K=(p,hold,move)=>({p,hold,move});
+const ANIMS={
+  "Hrudní páteř":{face:-1,props:ROLLER(240),
+    seq:[K(hrudniBase(158,184,-15),200,1300),K(hrudniBase(182,184,-20),200,1300),K(hrudniBase(158,184,-15),200,1300),K(hrudniBase(182,184,-20),400,900),
+         K(hrudniBase(170,192,-21),300,900),K({...hrudniBase(170,192,-21),chest:6,head:14},1500,900)],
+    idle:[K(hrudniBase(158,184,-15),200,1300),K(hrudniBase(182,184,-20),200,1300)],
+    pairs:[[hrudniBase(170,192,-21),{...hrudniBase(170,192,-21),chest:6,head:14}]]},
+  "Hýždě":{front:2,label:"pohled zepředu",vb:"40 30 320 185",order:["legB","torso","armB","armA","head","legA"],
+    props:`<rect x="146" y="177" width="108" height="27" rx="13" class="prop"/><ellipse cx="250" cy="190.5" rx="5" ry="13" class="prop2"/>`,
+    seq:[K(hyz0,300,1600),K(hyz1,1800,1600)]},
+  "Přední stehno a kyčel":{props:ROLLER(180),
+    seq:[K({hip:[200,166],torso:-12,head:-4,armF:{a:[90,0]},armN:{a:[90,0]},legF:{rel:"hip",dx:-136,dy:32,bend:1,ft:180},legN:{rel:"hip",dx:-134,dy:30,bend:1,ft:180}},150,1700),
+         K({hip:[248,166],torso:-12,head:-4,armF:{a:[90,0]},armN:{a:[90,0]},legF:{rel:"hip",dx:-136,dy:32,bend:1,ft:180},legN:{rel:"hip",dx:-134,dy:30,bend:1,ft:180}},150,1700)]},
+  "T zdvihy":{front:2,label:"pohled od hlavy",vb:"40 100 320 120",noEyes:true,order:["torso","head","armA","armB"],seq:[K(tz0,700,900),K(tz1,2200,900)]},
+  "Y zdvihy":{seq:[K(yz0,700,900),K(yz1,2200,900)]},
+  "Superman":{seq:[K(yz0,700,1000),K(sm1,2200,1000)]},
+  "Zvedání kolen":{vb:"60 -10 300 222",props:CHAIR,seq:[K(zk0,500,700),K(zk1,2000,700),K(zk0,500,700),K(zk1b,2000,700)],pairs:[[zk0,zk1],[zk0,zk1b]],repMode:"side"},
+  "Roztahování gumy":{front:2,label:"pohled zepředu",vb:"40 -10 320 222",props:CHAIR_F,order:["legA","legB","torso","head","armA","armB"],seq:[K(gm0,600,900),K(gm1,1800,900)],
+    extraF:(p)=>{ const a=p.armA[p.armA.length-1], b=p.armB[p.armB.length-1]; return `<path d="M${a[0].toFixed(1)} ${a[1].toFixed(1)} L${b[0].toFixed(1)} ${b[1].toFixed(1)}" stroke="#c0662b" stroke-width="5" stroke-linecap="round"/>`; }},
+  "Kobra":{seq:[K(kobra0,700,1600),K(kobra1,2200,1600)]},
+  "Kočka a kráva":{seq:[K(fours({torso:6,chest:-50,head:-15,armF:{a:[82,82]},armN:{a:[83,83]}}),900,1500),K(fours({torso:-27,chest:16,head:55}),900,1500)]},
+  "Navlékání jehly":{front:2,label:"pohled zepředu",vb:"40 -2 320 218",farArm:"B",order:["torso","armB","head","armA"],seq:[K(jeh0,900,1500),K(jeh1,1600,1500)]},
+  "Bird dog":{seq:[K(fours(),600,1200),K(fours({head:6,armN:{a:[-6,-6]},legF:{a:[183,183],ft:95}}),1800,1200),K(fours(),600,1200),K(fours({head:6,armF:{a:[-6,-6]},legN:{a:[183,183],ft:95}}),1800,1200)],
+    pairs:[[fours(),fours({head:6,armN:{a:[-6,-6]},legF:{a:[183,183],ft:95}})],[fours(),fours({head:6,armF:{a:[-6,-6]},legN:{a:[183,183],ft:95}})]],repMode:"side"},
+  "Plank":{seq:[K(plank0,700,1200),K(plank1,3000,1200)],tl:[[0,30,1],[30,45,0],[45,75,1]]},
+  "Boční plank":{front:2,label:"pohled zepředu",order:["legA","legB","torso","armA","head","armB"],seq:[K(bpl0,700,1200),K(bpl1,3000,1200)],tl:[[0,29.5,1],[29.5,31.5,0],[31.5,60,1]]},
+  "Dead bug":{face:-1,seq:[K(dbug0,500,1100),K({...dbug0,armN:{a:[-14,-14]},legF:{a:[175,175],ft:180}},900,1100),K(dbug0,500,1100),K({...dbug0,armF:{a:[-16,-16]},legN:{a:[174,174],ft:180}},900,1100)],
+    pairs:[[dbug0,{...dbug0,armN:{a:[-14,-14]},legF:{a:[175,175],ft:180}}],[dbug0,{...dbug0,armF:{a:[-16,-16]},legN:{a:[174,174],ft:180}}]],repMode:"alt"},
+  "Hýžďový most":{face:-1,seq:[K(most0,700,1100),K(most1,1800,1100)]},
+  "Zadní stehno s popruhem":{face:-1,vb:"20 28 380 192",seq:[K(strap0,700,1800),K(strap1,3000,1800)],tl:[[0,44.5,1],[44.5,46.5,0],[46.5,90,1]],
+    extra:(s)=>{ const toe=s.legs[1][3], h=s.arms[1][2]; return `<path d="M${toe.x.toFixed(1)} ${toe.y.toFixed(1)} L${h.x.toFixed(1)} ${h.y.toFixed(1)}" stroke="#c0662b" stroke-width="4" stroke-linecap="round"/>`; }},
+  "Kyčelní flexor":{vb:"20 -8 380 222",seq:[K(flex0,800,1800),K(flex1,3000,1800)],tl:[[0,1,0],[1,44.5,1],[44.5,46.5,0],[46.5,90,1]]},
+  "Zasunutí brady":{vb:"60 -10 300 222",props:CHAIR,seq:[K(brada0,900,700),K(brada1,2500,700)]},
+  "Protahování trapézu":{front:true,label:"pohled zepředu",vb:"60 -10 280 222",props:CHAIR_F,seq:[K(trap0,500,1500),K(trap1,2500,1500),K(trap0,500,1500),K(trap1b,2500,1500)],
+    pairs:[[trap0,trap1],[trap0,trap1b]],tl:[[0,37,1,0],[37,39,0,0],[39,75,1,1]]}
+};
+
+// ===== animace Sestavy 2 =====
+const WALL=x=>`<path d="M${x} -88 V204" class="propl"/>`;
+const stand=(o={})=>Object.assign({hip:[200,56],torso:-90,head:0,armF:{a:[95,92]},armN:{a:[85,88]},legF:{a:[90,90],ft:0},legN:{a:[90,90],ft:0}},o);
+const VBS="40 -88 340 302";
+const ctyr0={hip:[190,193],torso:0,head:0,armF:{ik:[175,200],bend:1},armN:{ik:[178,200],bend:1},legF:{ik:[118,199],bend:1,ft:180},legN:{a:[-100,180],ft:180}};
+const ctyr1={...ctyr0,armF:{ik:[204,152],bend:1},armN:{ik:[207,150],bend:1},legF:{a:[-82,180],ft:180},legN:{a:[-50,180],ft:180}};
+// otevírání knihy – pohled od hlavy: leh na boku, kolena pokrčená před tělem (vpravo)
+const kn0={hc:[200,166],hw:0,nk:[200,166],sw:0,shA:[200,188],shB:[200,145],hpA:[214,190],hpB:[214,152],head:[207,166],ea:90,
+  armA:[[246,193],[292,197]],armB:{a:[22,27]},legA:[[256,194],[262,199]],legB:[[254,172],[262,188]]};
+const kn1={...kn0,shB:[168,174],head:[199,160],ea:0,armB:{a:[-195,-190]}};
+const hv0={hc:[200,140],hw:0,nk:[200,152],sw:30,head:[200,160],ea:0,armA:[[180,166],[195,150]],armB:[[220,166],[205,150]],legA:[],legB:[]};
+const hv1={...hv0,armA:[[152,166],[106,188]],armB:[[248,166],[294,188]]};
+const sf0={hip:[190,190],torso:-2,head:-10,armF:{ik:[268,203],bend:1},armN:{ik:[272,203],bend:1},legF:{a:[181,180],ft:180},legN:{a:[180,180],ft:180}};
+const sf1={...sf0,torso:-28,chest:-28,head:-2,armF:{ik:[318,200],bend:1},armN:{ik:[322,200],bend:1}};
+sf0.chest=-2;
+const ds1={hip:[140,150],torso:22,chest:22,head:12,armF:{a:[3,3]},armN:{a:[4,4]},legF:{a:[38,180],ft:180},legN:{a:[38,180],ft:180}};
+const ps0=stand({armF:{ik:[284,-8],bend:-1}});
+const ps1=stand({armF:{ik:[284,-8],bend:-1},armN:{ik:[182,64],bend:1},legN:{a:[92,256],ft:260}});
+const lt0={hip:[170,80],torso:-70,chest:-70,head:0,armF:{ik:[292,-8],bend:-1},armN:{ik:[294,-4],bend:-1},legF:{ik:[92,199],bend:1,ft:0},legN:{ik:[238,199],bend:-1,ft:0}};
+const lt1={...lt0,hip:[180,84],torso:-64,chest:-64};
+const dv0=stand({armN:{ik:[142,-74],bend:-1}});
+const dv1=stand({hip:[220,58],torso:-86,armN:{ik:[142,-74],bend:-1},legN:{ik:[262,199],bend:-1,ft:0},legF:{ik:[188,199],bend:1,ft:0}});
+const pk0={hip:[185,130],torso:-88,chest:-88,head:0,armF:{ik:[235,122],bend:1},armN:{ik:[238,124],bend:1},legF:{a:[0,90],ft:0},legN:{a:[26,26],ft:-64}};
+const pk1={...pk0,torso:-42,chest:-42,head:4,armF:{ik:[272,146],bend:1},armN:{ik:[276,150],bend:1}};
+const ns0={hip:[178,130],torso:-102,chest:-80,head:12,armF:{ik:[226,124],bend:1},armN:{ik:[230,124],bend:1},legF:{a:[0,90],ft:0},legN:{a:[2,90],ft:0}};
+const ns1={...ns0,torso:-76,chest:-94,head:0};
+const zv0={tilt:0,holdX:150,holdY:142,hx:-2,hy:-16,nod:0,turn:0,mirror:0};
+const zv1={tilt:18,holdX:150,holdY:142,hx:-6,hy:-13,nod:10,turn:5,mirror:0}, zv1b={...zv1,mirror:1};
+Object.assign(ANIMS,{
+  "Čtyřka vleže":{face:-1,hold:true,seq:[K(ctyr0,800,1500),K(ctyr1,2500,1500)]},
+  "Otevírání knihy":{front:2,label:"leh na boku – pohled od hlavy",vb:"40 46 320 172",legsFar:true,order:["legB","legA","torso","armA","head","armB"],seq:[K(kn0,800,1500),K(kn1,1800,1500)]},
+  "Otevření hrudníku na válci":{front:2,label:"pohled od hlavy",vb:"40 90 320 128",noEyes:true,hold:true,order:["torso","head","armA","armB"],
+    props:`<circle cx="200" cy="182" r="22" class="prop"/><circle cx="200" cy="182" r="7" class="prop2"/>`,seq:[K(hv0,800,2200),K(hv1,3000,2200)]},
+  "Sfinga":{seq:[K(sf0,800,1500),K(sf1,3000,1500)],tl:[[0,25,1],[25,35,0],[35,60,1]]},
+  "Náklony pánve na čtyřech":{seq:[K(fours(),700,1200),K(fours({torso:6,chest:-50,head:-15,armF:{a:[82,82]},armN:{a:[83,83]}}),900,1200)]},
+  "Dětský sed široký":{hold:true,seq:[K(fours(),700,2000),K(ds1,3000,2000)]},
+  "Přední stehno ve stoje":{vb:VBS,hold:true,props:WALL(292),seq:[K(ps0,800,1500),K(ps1,3000,1500)]},
+  "Lýtko u zdi":{vb:VBS,hold:true,props:WALL(300),seq:[K(lt0,800,1800),K(lt1,3000,1800)]},
+  "Prsní sval ve dveřích":{vb:VBS,hold:true,props:WALL(136)+`<path d="M126 -88 V204" class="propl" style="opacity:.45"/>`,seq:[K(dv0,800,1600),K(dv1,3000,1600)]},
+  "Předklon v sedu":{vb:"60 -10 320 222",hold:true,props:CHAIR,seq:[K(pk0,800,1800),K(pk1,3000,1800)]},
+  "Náklony pánve v sedu":{vb:"60 -10 300 222",props:CHAIR,seq:[K(ns0,500,1200),K(ns1,900,1200)]},
+  "Zdvihač lopatky":{front:true,label:"pohled zepředu",hold:true,vb:"60 -10 280 222",props:CHAIR_F,seq:[K(zv0,500,1500),K(zv1,2500,1500),K(zv0,500,1500),K(zv1b,2500,1500)],pairs:[[zv0,zv1],[zv0,zv1b]]}
+});
+for(const n of ["Zadní stehno s popruhem","Kyčelní flexor","Protahování trapézu"]){ delete ANIMS[n].tl; ANIMS[n].hold=true; }
+for(const A of Object.values(ANIMS)) if(!A.pairs) A.pairs=[[A.seq[0].p,A.seq[1].p]];
+
+function makeFig(name){
+  const A=ANIMS[name]; if(!A) return null;
+  const svg=document.createElementNS("http://www.w3.org/2000/svg","svg");
+  svg.setAttribute("viewBox",A.vb||"20 70 380 150"); svg.setAttribute("class","fig");
+  svg.innerHTML=(A.noFloor?"":`<rect x="30" y="204" width="360" height="7" rx="3.5" class="mat"/><line class="floor" x1="25" y1="212" x2="395" y2="212"/>`)+`${A.props||""}<g class="body"></g>`;
+  if(A.label){ const [vx,vy]=(A.vb||"20 70 380 150").split(" ").map(Number); svg.insertAdjacentHTML("beforeend",`<text x="${vx+6}" y="${vy+15}" class="vlabel">${A.label}</text>`); }
+  svg._anim=A; draw(svg,A.seq[0].p); return svg;
+}
+function animSeq(svg,seq,ms){
+  const tot=seq.reduce((a,k)=>a+k.hold+k.move,0); let t=ms%tot;
+  for(let i=0;i<seq.length;i++){
+    const k=seq[i], nx=seq[(i+1)%seq.length];
+    if(t<k.hold) return draw(svg,k.p);
+    t-=k.hold;
+    if(t<k.move) return draw(svg,lerpPose(k.p,nx.p,ease(t/k.move)));
+    t-=k.move;
+  }
+}
+const animTime=(svg,ms)=>animSeq(svg,svg._anim.seq,ms);
+const FIGS=[];
+document.querySelectorAll(".exanim").forEach(el=>{ const f=makeFig(el.dataset.anim); if(f){ el.appendChild(f); FIGS.push(f);} else el.remove(); });
+let tFig=null;
+function setTimerFig(name){
+  const box=document.getElementById("tvis"), main=box.parentElement;
+  box.innerHTML=""; tFig=makeFig(name);
+  box.classList.toggle("has",!!tFig); main.classList.toggle("wide",!!tFig);
+  if(tFig) box.appendChild(tFig);
+}
+// timerPhase (nastaví časovač) vrací {pair:[a,b], v:0–1}, {idle:true} nebo null (volná smyčka)
+let timerPhase=null;
+const T0=performance.now();
+function frame(){
+  const ts=performance.now()-T0; FIGS.forEach(f=>animTime(f,ts));
+  if(!tFig) return;
+  const r=timerPhase&&timerPhase(tFig._anim);
+  if(!r) animTime(tFig,ts);
+  else if(r.idle) animSeq(tFig,tFig._anim.idle||tFig._anim.seq,ts);
+  else draw(tFig,lerpPose(r.pair[0],r.pair[1],r.v));
+}
+setInterval(frame,1000/30); frame();
+
+// časovač – běží automaticky, pauzy 15 s v bloku a 30 s mezi bloky
+const T = document.getElementById("timer");
+const $ = id => document.getElementById(id);
+const PAUSE_IN = 15, PAUSE_BLOCK = 30;
+const SWITCH = new Set(["Zadní stehno s popruhem","Čtyřka vleže","Otevírání knihy","Kyčelní flexor","Přední stehno ve stoje","Lýtko u zdi","Prsní sval ve dveřích","Předklon v sedu","Protahování trapézu","Zdvihač lopatky"]);
+const REPS={
+  "Otevírání knihy":{w:["otevřít","zavřít"],segs:[[0,35],[35,35]],n:6,back:.7},
+  "Náklony pánve na čtyřech":{w:["prohnout","rovně"],segs:[[0,45]],n:8,back:.6},
+  "Náklony pánve v sedu":{w:["dopředu","dozadu"],segs:[[0,45]],n:10,back:.5}
+};
+const LEAD=1; // 1 s na přípravu na začátku každého úseku
+function repPlan(e){
+  const r=REPS[e.n]; if(!r) return null;
+  const reps=[];
+  r.segs.forEach(([st,len],seg)=>{ const L=(len-LEAD-0.5)/r.n; for(let k=0;k<r.n;k++){ const t0=st+LEAD+k*L; reps.push({t0,len:L,back:t0+r.back*L,seg,k:reps.length}); } });
+  return reps;
+}
+const CUES={
+  "Sfinga":[{at:25,say:"Pauza",b:440},{at:35,say:"Druhá série",b:660}],
+  "Dětský sed široký":[{at:20,say:"Ruce doprava",b:660},{at:40,say:"Ruce doleva",b:660}]
+};
+function cuesFor(e){
+  if(CUES[e.n]) return CUES[e.n];
+  if(e.n==="Plank") return [{at:30,say:"Pauza",b:440},{at:45,say:"Druhá série",b:660}];
+  if(e.n==="Hrudní páteř") return [{at:45,say:"Záklony přes válec",b:660}];
+  if(SWITCH.has(e.n)) return [{at:Math.round(e.s/2),say:"Druhá strana",b:660}];
+  return [];
+}
+const STEPS=[];
+ALL.forEach((e,k)=>{
+  if(k>0){ const nb = e.bi!==ALL[k-1].bi; STEPS.push({pause:true,nb,s:nb?PAUSE_BLOCK:PAUSE_IN,e}); }
+  STEPS.push({pause:false,s:e.s,e,cues:cuesFor(e),reps:repPlan(e)});
+});
+const TOTAL = STEPS.reduce((a,s)=>a+s.s,0);
+document.getElementById("startBtn").textContent = `▶ Spustit sestavu s časovačem (${Math.round(TOTAL/60)} min i s pauzami)`;
+document.getElementById("subTime").textContent = `${Math.round(ALL.reduce((a,e)=>a+e.s,0)/60)} minut cvičení (s pauzami asi ${Math.round(TOTAL/60)} min)`;
+
+let si=0, running=false, endAt=0, remain=STEPS[0].s, tick=null, ac=null, lastSec=null, fired=new Set(), voice=true, wl=null, done=false;
+try{ voice = localStorage.getItem("sestava-hlas")!=="0"; }catch(e){}
+
+let audioOK=null; // null = zatím nevíme, false = prohlížeč tóny blokuje → místo tónů slova
+function audioInit(){
+  try{
+    ac = ac || new (window.AudioContext||window.webkitAudioContext)();
+    if(ac.state!=="running") ac.resume().catch(()=>{});
+    setTimeout(()=>{ audioOK = ac.state==="running"; audioBadge(); },500);
+  }catch(e){ audioOK=false; audioBadge(); }
+}
+function beep(f=880,d=.18){
+  try{
+    if(!ac) audioInit();
+    if(ac.state!=="running"){ ac.resume().catch(()=>{}); }
+    const o=ac.createOscillator(), g=ac.createGain(), t=ac.currentTime+0.01;
+    o.type="triangle"; o.frequency.value=f; o.connect(g); g.connect(ac.destination);
+    g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(.6,t+0.01); g.gain.exponentialRampToValueAtTime(.001,t+d);
+    o.start(t); o.stop(t+d+0.02);
+  }catch(e){}
+}
+function audioBadge(){ const b=document.getElementById("tVoice"); if(b) b.title = audioOK===false ? "Tóny jsou v tomto prohlížeči blokované – opakování se hlásí slovy" : ""; }
+// signál opakování: tón, a když tóny nejdou, krátké slovo
+function repCue(kind,e){
+  if(audioOK===false){ const w=(REPS[e.n]&&REPS[e.n].w)||["teď","zpět"]; sayQ(kind==="u"?w[0]:w[1]); }
+  else beep(kind==="u"?880:440, kind==="u"?.16:.24);
+}
+function say(t){
+  if(!voice) return;
+  try{
+    const u=new SpeechSynthesisUtterance(t); u.lang="cs-CZ"; u.rate=1;
+    const v=speechSynthesis.getVoices().find(v=>v.lang&&v.lang.toLowerCase().startsWith("cs"));
+    if(v) u.voice=v;
+    speechSynthesis.cancel(); speechSynthesis.speak(u);
+  }catch(e){}
+}
+function sayQ(t){ // krátké slovo bez přerušení (rychlejší řeč)
+  if(!voice) return;
+  try{ const u=new SpeechSynthesisUtterance(t); u.lang="cs-CZ"; u.rate=1.3;
+    const v=speechSynthesis.getVoices().find(v=>v.lang&&v.lang.toLowerCase().startsWith("cs")); if(v) u.voice=v;
+    speechSynthesis.speak(u); }catch(e){}
+}
+async function lock(){
+  try{ if("wakeLock" in navigator && !wl){ wl=await navigator.wakeLock.request("screen"); wl.addEventListener("release",()=>{wl=null;}); } }catch(e){}
+}
+function unlock(){ try{ wl&&wl.release(); }catch(e){} wl=null; }
+document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible" && running) lock(); });
+
+function announce(){
+  const st=STEPS[si];
+  if(st.pause) say(st.nb ? `Přesun na další blok, ${st.e.b.name}. Další cvik: ${st.e.n}` : `Pauza. Další: ${st.e.n}`);
+  else if(audioOK===false && st.reps) say(st.e.n);
+  else say(`${st.e.n}. ${st.e.d.replace(/×/g," krát").replace(/(\d+) s\b/g,(m,n)=>n+(n>=2&&n<=4?" sekundy":" sekund")).replace(/[()]/g,"")}`);
+}
+function leftSec(){ return running ? Math.max(0,Math.ceil((endAt-Date.now())/1000)) : remain; }
+
+function show(){
+  const st=STEPS[si], e=st.e, left=leftSec();
+  if(T._fig!==e.n){ T._fig=e.n; setTimerFig(e.n); }
+  T.style.setProperty("--c", st.pause ? "#8a93a3" : `var(${e.b.c})`);
+  $("tcount").textContent=`Cvik ${e.i} / ${ALL.length}`;
+  if(done){
+    $("tblock").textContent="Sestava dokončena";
+    $("tname").textContent="Hotovo 💪"; $("tdose").textContent=""; $("tdesc").textContent="";
+    $("tclock").textContent="0:00"; $("tnext").textContent=""; $("tprog").style.width="100%";
+    $("tPlay").textContent="Znovu"; return;
+  }
+  $("tblock").textContent = st.pause ? (st.nb ? `Přesun – Blok ${e.bi+1}: ${e.b.name}` : "Pauza") : `Blok ${e.bi+1} – ${e.b.name}`;
+  $("tname").textContent = st.pause ? `Připrav se: ${e.n}` : e.n;
+  $("tdose").textContent = e.d;
+  $("tdesc").textContent = e.t;
+  $("tclock").textContent = fmt(left);
+  const elapsed = STEPS.slice(0,si).reduce((a,s)=>a+s.s,0) + (st.s-left);
+  $("tprog").style.width = (elapsed/TOTAL*100)+"%";
+  if(st.pause) $("tnext").textContent = "";
+  else { const nx=ALL[e.i]; $("tnext").textContent = nx ? `Potom: ${nx.n}` : "Poslední cvik"; }
+  $("tPlay").textContent = running ? "Pauza" : (left===st.s ? "Start" : "Pokračovat");
+}
+function enter(i, keepTime){
+  si=i; fired=new Set(); lastSec=null;
+  if(running){ endAt = keepTime ? endAt + STEPS[si].s*1000 : Date.now()+STEPS[si].s*1000; }
+  else remain=STEPS[si].s;
+  announce(); show();
+}
+function finish(){
+  running=false; clearInterval(tick); done=true; unlock();
+  beep(990,.5); say("Hotovo. Výborně."); show();
+}
+function loop(){
+  const st=STEPS[si];
+  if(Date.now()>=endAt){
+    beep(990,.35);
+    if(si>=STEPS.length-1){ finish(); return; }
+    enter(si+1,true);
+    return;
+  }
+  const left=leftSec();
+  if(!st.pause && st.cues){
+    const el=st.s-left;
+    st.cues.forEach((c,k)=>{ if(el>=c.at && !fired.has(k)){ fired.add(k); beep(c.b,.25); say(c.say); } });
+  }
+  if(!st.pause && st.reps){
+    const elF=st.s-(endAt-Date.now())/1000;
+    st.reps.forEach((r,k)=>{
+      if(elF>=r.t0 && !fired.has("u"+k)){ fired.add("u"+k); repCue("u",st.e); }
+      if(elF>=r.back && !fired.has("d"+k)){ fired.add("d"+k); repCue("d",st.e); }
+    });
+  } else if(left<=3 && left>0 && left!==lastSec){ lastSec=left; beep(520,.1); }
+  show();
+}
+function start(){
+  audioInit();
+  running=true; done=false; endAt=Date.now()+remain*1000;
+  { const st=STEPS[si]; if(!st.pause && st.reps){ const elF=st.s-remain; st.reps.forEach((r,k)=>{ if(r.t0<elF-0.05) fired.add("u"+k); if(r.back<elF-0.05) fired.add("d"+k); }); } }
+  lock(); beep(660); clearInterval(tick); tick=setInterval(loop,250); show();
+}
+function pause(){
+  remain=leftSec(); running=false; clearInterval(tick); unlock(); try{speechSynthesis.cancel();}catch(e){} show();
+}
+function jump(dir){
+  // skok na předchozí/další cvik (pauzy přeskočí)
+  const n=STEPS[si].e.i, target = dir>0 ? (STEPS[si].pause ? n : n+1) : n-1;
+  const j=STEPS.findIndex(s=>!s.pause && s.e.i===target);
+  if(j>=0) enter(j,false);
+}
+timerPhase=(A)=>{
+  if(!running) return null;
+  const st=STEPS[si];
+  if(st.pause) return {pair:[A.pairs[0][0],A.pairs[0][0]],v:0};
+  const el=st.s-(endAt-Date.now())/1000;
+  let tl=A.tl;
+  if(!tl && A.hold && !st.reps){ const S=st.s, h=S/2;
+    tl = SWITCH.has(st.e.n) ? [[0,h-1,1,0],[h-1,h+1,0,0],[h+1,S,1,A.pairs.length>1?1:0]] : [[0,S,1,0]]; }
+  if(tl){
+    const i=Math.max(0,tl.findIndex(([a,b])=>el>=a && el<b)), seg=tl[i];
+    const prev=i>0?tl[i-1][2]:0, tgt=seg[2], vi=seg[3]??0;
+    return {pair:A.pairs[vi], v:prev+(tgt-prev)*ease(Math.min(1,(el-seg[0])/1.2))};
+  }
+  if(!st.reps) return {idle:true};
+  const first=st.reps[0];
+  if(el<first.t0-0.6) return A.idle?{idle:true}:{pair:A.pairs[0],v:0};
+  const r=st.reps.find(r=>el>=r.t0 && el<r.t0+r.len);
+  const vi=(rr)=> A.repMode==="side" ? Math.min(rr.seg,A.pairs.length-1) : A.repMode==="alt" ? rr.k%A.pairs.length : 0;
+  if(!r){ const nx=st.reps.find(r=>r.t0>el)||st.reps[st.reps.length-1]; return {pair:A.pairs[vi(nx)],v:0}; }
+  const up=Math.min(1.3,(r.back-r.t0)*0.45), down=Math.min(1,(r.t0+r.len-r.back)*0.9);
+  const v = el<r.back ? ease(Math.min(1,(el-r.t0)/up)) : 1-ease(Math.min(1,(el-r.back)/down));
+  return {pair:A.pairs[vi(r)],v};
+};
+function voiceBtn(){ $("tVoice").textContent = voice ? "🔊 Hlas" : "🔇 Hlas"; }
+
+$("startBtn").onclick=()=>{ if(running) pause(); done=false; si=0; remain=STEPS[0].s; T.classList.add("on"); voiceBtn(); show(); };
+$("tClose").onclick=()=>{ if(running) pause(); T.classList.remove("on"); };
+$("tPlay").onclick=()=>{
+  if(done){ done=false; si=0; remain=STEPS[0].s; }
+  if(running){ pause(); return; }
+  const fresh = remain===STEPS[si].s;
+  start(); if(fresh) announce();
+};
+$("tNext").onclick=()=>{ done=false; jump(1); };
+$("tPrev").onclick=()=>{ done=false; jump(-1); };
+$("tVoice").onclick=()=>{ voice=!voice; try{localStorage.setItem("sestava-hlas",voice?"1":"0");}catch(e){} if(!voice) try{speechSynthesis.cancel();}catch(e){} voiceBtn(); };
+try{ speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged=()=>{}; }catch(e){}
+$("tFull").onclick=()=>{ try{ document.fullscreenElement ? document.exitFullscreen() : T.requestFullscreen().catch(()=>{}); }catch(e){} };
+document.addEventListener("keydown",ev=>{
+  if(!T.classList.contains("on")) return;
+  if(ev.code==="Space"){ ev.preventDefault(); $("tPlay").click(); }
+  else if(ev.key==="ArrowRight") $("tNext").click();
+  else if(ev.key==="ArrowLeft") $("tPrev").click();
+  else if(ev.key==="Escape" && !document.fullscreenElement) $("tClose").click();
+});
+</script>
+</body>
+</html>
